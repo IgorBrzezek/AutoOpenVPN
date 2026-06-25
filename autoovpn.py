@@ -35,7 +35,7 @@ import getpass
 
 
 AUTHOR = "Igor Brzezek"
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 GITHUB = "https://github.com/IgorBrzezek"
 
 # ---------------------------------------------------------------------------

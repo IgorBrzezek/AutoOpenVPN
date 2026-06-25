@@ -123,7 +123,7 @@ class DisplayConfig:
 class Config:
     """Complete application configuration."""
     app_name: str = "OVPNMonitor"
-    version: str = "1.0.0"
+    version: str = "0.0.2"
     author: str = "Igor Brzezek"
     refresh_interval_ms: int = 1000
     refresh_interval_s: int = 1

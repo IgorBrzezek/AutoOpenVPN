@@ -471,19 +471,34 @@ def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None,
 
     try:
         if timeout_seconds is not None:
-            try:
-                process.wait(timeout=timeout_seconds)
-            except subprocess.TimeoutExpired:
-                print(f"\n[*] Timeout reached ({timeout_str}), terminating OpenVPN...")
-                _kill_pg()
+            deadline = time.monotonic() + timeout_seconds
+            while True:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    print(f"\n[*] Timeout reached ({timeout_str}), terminating OpenVPN...")
+                    _kill_pg()
+                    try:
+                        process.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        _kill_pg_hard()
+                        process.wait()
+                    break
+
+                hrs = int(remaining // 3600)
+                mins = int((remaining % 3600) // 60)
+                secs = int(remaining % 60)
+                print(f"\r[*] Time remaining: {hrs:02d}:{mins:02d}:{secs:02d}  ", end='', flush=True)
+
                 try:
-                    process.wait(timeout=5)
+                    process.wait(timeout=1)
+                    print()
+                    break
                 except subprocess.TimeoutExpired:
-                    _kill_pg_hard()
-                    process.wait()
+                    continue
         else:
             process.wait()
     except KeyboardInterrupt:
+        print()
         print("\n[*] OpenVPN terminated by user.")
         _kill_pg()
         try:

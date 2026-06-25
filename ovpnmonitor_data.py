@@ -1018,3 +1018,86 @@ def stop_collectors(collectors: List[CollectorThread]) -> None:
         c.stop()
     for c in collectors:
         c.join(timeout=3)
+
+
+def get_all_routes() -> List[Dict]:
+    """Get all routes from the system routing table.
+    Returns list of dicts with keys: destination, gateway, interface, is_vpn.
+    """
+    routes: List[Dict] = []
+    vpn_keywords = [
+        "tap", "tun", "openvpn", "vpn", "wintun", "wireguard",
+        "secureline", "nordlynx", "proton", "mullvad",
+    ]
+
+    if sys.platform == "win32":
+        try:
+            out = subprocess.run(
+                ["route", "print"],
+                capture_output=True, text=True, timeout=5,
+                creationflags=subprocess.CREATE_NO_WINDOW,
+            )
+            in_table = False
+            for line in out.stdout.splitlines():
+                if "IPv4 Route Table" in line:
+                    in_table = True
+                    continue
+                if not in_table:
+                    continue
+                parts = line.strip().split()
+                if len(parts) >= 5 and parts[0] == "0.0.0.0":
+                    dest = parts[0]
+                    netmask = parts[1]
+                    gw = parts[2]
+                    iface = parts[4] if len(parts) > 4 else ""
+                    dest_str = f"{dest}/{netmask}" if netmask else dest
+                    if dest_str.startswith("0.0.0.0") and netmask == "0.0.0.0":
+                        dest_str = "default"
+                    is_vpn = any(kw in iface.lower() for kw in vpn_keywords) if iface else False
+                    routes.append({
+                        "destination": dest_str,
+                        "gateway": gw,
+                        "interface": iface,
+                        "is_vpn": is_vpn,
+                    })
+        except (subprocess.TimeoutExpired, OSError):
+            pass
+    else:
+        try:
+            out = subprocess.run(
+                ["ip", "route", "show"],
+                capture_output=True, text=True, timeout=5,
+            )
+            for line in out.stdout.splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                parts = line.split()
+                dest = ""
+                gw = ""
+                iface = ""
+
+                if parts[0] == "default":
+                    dest = "default"
+                else:
+                    dest = parts[0]
+
+                for i, p in enumerate(parts):
+                    if p == "via" and i + 1 < len(parts):
+                        gw = parts[i + 1]
+                    elif p == "dev" and i + 1 < len(parts):
+                        iface = parts[i + 1]
+
+                is_vpn = any(kw in iface.lower() for kw in vpn_keywords) if iface else False
+                routes.append({
+                    "destination": dest,
+                    "gateway": gw,
+                    "interface": iface,
+                    "is_vpn": is_vpn,
+                })
+        except (subprocess.TimeoutExpired, OSError):
+            pass
+        except FileNotFoundError:
+            pass
+
+    return routes

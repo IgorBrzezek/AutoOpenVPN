@@ -13,7 +13,7 @@ import time
 from typing import Optional
 
 from ovpnmonitor_cfg import Config, get_attr
-from ovpnmonitor_data import MonitorState
+from ovpnmonitor_data import MonitorState, get_all_routes
 
 # ---------------------------------------------------------------------------
 # Unicode box-drawing characters (double line)
@@ -211,6 +211,8 @@ class UIManager:
         self.show_info = False
         self.show_ping = True
         self.show_warning = bool(self.cfg.warnings)
+        self.show_routes = False
+        self._routes_cache = []
         self.hostname = socket.gethostname()
 
     def get_size(self):
@@ -238,6 +240,8 @@ class UIManager:
             self._draw_info_popup(h, w)
         if self.show_warning:
             self._draw_warning_popup(h, w)
+        if self.show_routes:
+            self._draw_routes_popup(h, w)
 
         self.stdscr.noutrefresh()
         curses.doupdate()
@@ -282,7 +286,7 @@ class UIManager:
         safe_addstr(self.stdscr, y, 1, self.hostname, attr)
 
         # Center: key hints
-        hints = "H:Help  I:Info  R:RefreshIP  P:Pause  Q:Quit"
+        hints = "H:Help  I:Info  N:Ping  R:Routes  P:Pause  Q:Quit"
         hx = (w - len(hints)) // 2
         safe_addstr(self.stdscr, y, hx, hints, attr)
 
@@ -334,11 +338,8 @@ class UIManager:
         if self.cfg.network.ping_enabled:
             num_targets = len(self.cfg.network.ping_targets)
             ping_h = max(6, num_targets * 2 + 4)
-            if self.show_ping:
-                bar_w = max(4, self.cfg.display.ping_bar_width)
-                ping_w = min(bar_w + 9, (usable_w - gap) * 2 // 5)
-            else:
-                ping_w = 0
+            bar_w = max(4, self.cfg.display.ping_bar_width)
+            ping_w = min(bar_w + 9, (usable_w - gap) * 2 // 5)
         else:
             ping_h = 0
             ping_w = 0
@@ -688,7 +689,9 @@ class UIManager:
         lines = [
             ("H / F1", "Toggle this help"),
             ("I",      "Toggle connection info"),
-            ("R",      "Refresh public IP now"),
+            ("N",      "Toggle ping monitor"),
+            ("R",      "Show routes table"),
+            ("U",      "Refresh public IP now"),
             ("P",      "Pause/resume collectors"),
             ("Q",      "Quit application"),
             ("ESC",    "Close popup"),
@@ -715,11 +718,13 @@ class UIManager:
             ("App Name:",    self.cfg.app_name),
             ("Version:",     self.cfg.version),
             ("Author:",      self.cfg.author),
+            ("",             ""),
             ("VPN Interface:", snap["vpn_interface"] or "(none)"),
             ("VPN PID:",     str(snap["vpn_process_pid"]) if snap["vpn_process_pid"] else "N/A"),
             ("Config:",      snap["vpn_config_file"] or "N/A"),
             ("Hostname:",    self.hostname),
-            ("Config File:", cfg_path or "(defaults)"),
+            ("Config File:", ""),
+            ("",             cfg_path or "(defaults)"),
         ]
         ph = len(lines) + 4
         py, px = self._draw_popup_box(h, w, ph, pw, "Program Info")
@@ -727,8 +732,53 @@ class UIManager:
         value_attr = get_attr(self.cfg, "popup_bg")
 
         for i, (label, value) in enumerate(lines):
-            safe_addstr(self.stdscr, py + 2 + i, px + 3, f"  {label:>16s} ", label_attr)
-            safe_addstr(self.stdscr, py + 2 + i, px + 22, value, value_attr)
+            if label:
+                safe_addstr(self.stdscr, py + 2 + i, px + 3, f"  {label:>16s} ", label_attr)
+                safe_addstr(self.stdscr, py + 2 + i, px + 22, value, value_attr)
+            elif value:
+                safe_addstr(self.stdscr, py + 2 + i, px + 3, f"      {value}", value_attr)
+
+    def _draw_routes_popup(self, h: int, w: int):
+        self._routes_cache = get_all_routes()
+        routes = self._routes_cache
+
+        if not routes:
+            pw = min(50, w - 6)
+            ph = 5
+            py, px = self._draw_popup_box(h, w, ph, pw, "Routes Table")
+            safe_addstr(self.stdscr, py + 2, px + 3, " No routes found", get_attr(self.cfg, "text_warning"))
+            return
+
+        max_vis = h - 6
+        pw = min(70, w - 6)
+        ph = min(len(routes) + 4, max(6, h - 4))
+        py, px = self._draw_popup_box(h, w, ph, pw, "Routes Table")
+
+        label_attr = get_attr(self.cfg, "text_label", bold=True)
+        vpn_attr = get_attr(self.cfg, "text_warning", bold=True)
+        norm_attr = get_attr(self.cfg, "text_value")
+        header_attr = get_attr(self.cfg, "border_title", bold=True)
+        bg_attr = get_attr(self.cfg, "popup_bg")
+
+        # Fill background inside box
+        for row in range(1, ph - 1):
+            safe_addstr(self.stdscr, py + row, px + 1, " " * (pw - 2), bg_attr)
+
+        # Header
+        safe_addstr(self.stdscr, py + 2, px + 2,
+                   f"  {'Destination':<22s} {'Gateway':<18s} {'Interface':<12s}", label_attr)
+
+        # Routes
+        max_rows = ph - 4
+        for i, r in enumerate(routes):
+            if i >= max_rows:
+                break
+            dest = r["destination"][:20].ljust(20)
+            gw = r["gateway"][:16].ljust(16) if r["gateway"] else "(none)".ljust(16)
+            iface = r["interface"][:10].ljust(10) if r["interface"] else "(none)".ljust(10)
+            line = f"  {dest} {gw} {iface}"
+            attr = vpn_attr if r["is_vpn"] else norm_attr
+            safe_addstr(self.stdscr, py + 3 + i, px + 2, line, attr)
 
     # --- Input handling ---
 
@@ -738,25 +788,28 @@ class UIManager:
         ch = chr(key) if 0 < key < 256 else ""
         ch_lower = ch.lower()
 
-        if ch_lower == k.quit and not self.show_help and not self.show_info:
+        if ch_lower == k.quit and not self.show_help and not self.show_info and not self.show_routes:
             return False
 
         if key == 27:  # ESC
             self.show_help = False
             self.show_info = False
             self.show_warning = False
+            self.show_routes = False
             return True
 
         if ch_lower == k.help or key == curses.KEY_F1:
             self.show_help = not self.show_help
             if self.show_help:
                 self.show_info = False
+                self.show_routes = False
             return True
 
         if ch_lower == k.info:
             self.show_info = not self.show_info
             if self.show_info:
                 self.show_help = False
+                self.show_routes = False
             return True
 
         if ch_lower == k.toggle_pause:
@@ -766,6 +819,13 @@ class UIManager:
 
         if ch_lower == k.toggle_ping:
             self.show_ping = not self.show_ping
+            return True
+
+        if ch_lower == k.show_routes:
+            self.show_routes = not self.show_routes
+            if self.show_routes:
+                self.show_help = False
+                self.show_info = False
             return True
 
         if ch_lower == k.refresh_ip:

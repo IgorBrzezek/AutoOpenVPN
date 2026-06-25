@@ -45,3 +45,30 @@ autoovpn --run us16,tcp443 --addroute 192.168.53.0/24,10.10.10.1
 ```
 
 The route is added via `ip route add NET/MASK via GATEWAY` after OpenVPN reports "Initialization Sequence Completed". On disconnect (timeout, Ctrl+C, or normal exit), the route is removed via `ip route del NET/MASK via GATEWAY`.
+
+# ovpnmonitor.py
+
+A retro DOS/iptraf-style terminal UI for monitoring OpenVPN connections.
+
+## Usage
+
+```
+python ovpnmonitor.py [-c CONFIG] [--noping] [--pathping IP] [--tun NAME]
+```
+
+## Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `H` / `F1` | Toggle help |
+| `I` | Toggle connection info |
+| `N` | Toggle ping monitor window |
+| `R` | Show routes table (VPN routes in yellow) |
+| `U` | Refresh public IP |
+| `P` | Pause/resume collectors |
+| `Q` | Quit |
+| `ESC` | Close popup |
+
+## Config
+
+See `ovpnmonitor.cfg` for all settings: keys, colors, ping targets, and intervals.

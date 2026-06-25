@@ -77,9 +77,10 @@ class KeyConfig:
     quit: str = "q"
     help: str = "h"
     info: str = "i"
-    refresh_ip: str = "r"
+    refresh_ip: str = "u"
     toggle_pause: str = "p"
     toggle_ping: str = "n"
+    show_routes: str = "r"
 
 
 @dataclass
@@ -317,6 +318,7 @@ def load_config(explicit_path: Optional[str] = None) -> Config:
         kc.refresh_ip = k.get("refresh_ip", kc.refresh_ip)
         kc.toggle_pause = k.get("toggle_pause", kc.toggle_pause)
         kc.toggle_ping = k.get("toggle_ping", kc.toggle_ping)
+        kc.show_routes = k.get("show_routes", kc.show_routes)
 
     # --- [display] ---
     if cp.has_section("display"):

@@ -34,6 +34,47 @@ import urllib.request
 import getpass
 
 
+# ---------------------------------------------------------------------------
+# Color support
+# ---------------------------------------------------------------------------
+
+COLOR_ENABLED = False
+
+
+def c(text, color):
+    if not COLOR_ENABLED:
+        return text
+    codes = {
+        'p': '\033[95m',   # purple/pink
+        'b': '\033[94m',   # blue
+        'c': '\033[96m',   # cyan
+        'g': '\033[92m',   # green
+        'y': '\033[93m',   # yellow
+        'r': '\033[91m',   # red
+        'B': '\033[1m',    # bold
+        'e': '\033[0m',    # reset
+    }
+    return f"{codes.get(color, '')}{text}{codes['e']}"
+
+
+def color_status(text, status):
+    """Return colored status prefix + text."""
+    sc = {'+': 'g', '!': 'r', '*': 'b', '-': 'y'}.get(status, '')
+    pre = f"[{status}]"
+    if sc:
+        pre = c(pre, sc)
+    return f"{pre} {c(text, sc) if sc else text}"
+
+
+def color_header(text):
+    width = 60
+    sep = "=" * width
+    if COLOR_ENABLED:
+        sep = c(sep, 'c')
+        text = c(c(text, 'B'), 'c')
+    return f"{sep}\n{text}\n{sep}"
+
+
 AUTHOR = "Igor Brzezek"
 VERSION = "0.0.2a"
 GITHUB = "https://github.com/IgorBrzezek"
@@ -241,42 +282,48 @@ def scan_protocols(payloads):
 # ---------------------------------------------------------------------------
 
 def scan():
-    print("[*] Scanning VPNBook for available servers and credentials...\n")
+    print(color_status("Scanning VPNBook for available servers and credentials...", '*'))
+    print()
     try:
         html = fetch_url("https://www.vpnbook.com/freevpn/openvpn")
     except Exception as e:
-        print(f"  [!] Network error: {e}", file=sys.stderr)
+        print(f"  {color_status(f'Network error: {e}', '!')}", file=sys.stderr)
         return None, None, (None, None, None)
 
     payloads = extract_rsc_payloads(html)
     if not payloads:
-        print("  [!] No RSC payloads found — website structure may have changed.", file=sys.stderr)
+        print(f"  {color_status('No RSC payloads found - website structure may have changed.', '!')}", file=sys.stderr)
         return None, None, (None, None, None)
 
     servers = scan_servers(payloads)
     protocols = scan_protocols(payloads)
     username, password, last_updated = scan_credentials(payloads)
 
-    print("=" * 60)
-    print("  VPNBook Scan Results")
-    print("=" * 60)
+    print(color_header("  VPNBook Scan Results"))
+    print()
 
     if username and password:
-        print(f"\n  Credentials:")
-        print(f"    Username : {username}")
-        print(f"    Password : {password}")
+        sec = c("Credentials:", 'B') if COLOR_ENABLED else "Credentials:"
+        print(f"  {sec}")
+        print(f"    {c('Username', 'b') if COLOR_ENABLED else 'Username'} : {c(username, 'y') if COLOR_ENABLED else username}")
+        print(f"    {c('Password', 'b') if COLOR_ENABLED else 'Password'} : {c(password, 'y') if COLOR_ENABLED else password}")
         if last_updated:
             print(f"    Updated  : {last_updated}")
 
     if servers:
-        print(f"\n  OpenVPN Servers ({len(servers)}):")
+        hdr = c(f"OpenVPN Servers ({len(servers)}):", 'B') if COLOR_ENABLED else f"OpenVPN Servers ({len(servers)}):"
+        print(f"\n  {hdr}")
         for s in servers:
-            print(f"    {s['id']:8s}  {s['hostname']}")
+            sid = c(s['id'], 'c') if COLOR_ENABLED else s['id']
+            print(f"    {sid:8s}  {s['hostname']}")
 
     if protocols:
-        print(f"\n  Protocols ({len(protocols)}):")
+        hdr = c(f"Protocols ({len(protocols)}):", 'B') if COLOR_ENABLED else f"Protocols ({len(protocols)}):"
+        print(f"\n  {hdr}")
         for p in protocols:
-            print(f"    {p['proto'].upper():4s}  {p['port']:6s}  ({p['key']})")
+            pp = c(p['proto'].upper(), 'y') if COLOR_ENABLED else p['proto'].upper()
+            pk = c(f"({p['key']})", 'c') if COLOR_ENABLED else f"({p['key']})"
+            print(f"    {pp:4s}  {p['port']:6s}  {pk}")
 
     print(f"\n{'=' * 60}\n")
 
@@ -298,7 +345,7 @@ def download_config(server, protocol):
         with urllib.request.urlopen(req, timeout=30) as resp:
             return resp.read().decode("utf-8")
     except Exception as e:
-        print(f"  [!] Failed: {url} - {e}", file=sys.stderr)
+        print(f"  {color_status(f'Failed: {url} - {e}', '!')}", file=sys.stderr)
         return None
 
 
@@ -332,28 +379,31 @@ def save_config(server, protocol, config):
     filepath = os.path.join(SCRIPT_DIR, filename)
     with open(filepath, "w") as f:
         f.write(config)
-    print(f"  [+] {filename}")
+    print(f"  {color_status(filename, '+')}")
     return filepath
 
 
 def print_static_options(servers, protocols, username, password):
     """Print available options in --scan format using static fallback data."""
-    print("=" * 60)
-    print("  VPNBook Scan Results (fallback)")
-    print("=" * 60)
+    print(color_header("  VPNBook Scan Results (fallback)"))
 
-    print(f"\n  Credentials:")
-    print(f"    Username : {username}")
-    pw = password if password else "*** unknown – run --scan separately ***"
-    print(f"    Password : {pw}")
+    sec = c("Credentials:", 'B') if COLOR_ENABLED else "Credentials:"
+    print(f"\n  {sec}")
+    print(f"    {c('Username', 'b') if COLOR_ENABLED else 'Username'} : {c(username, 'y') if COLOR_ENABLED else username}")
+    pw = password if password else c("*** unknown - run --scan separately ***", 'r') if COLOR_ENABLED else "*** unknown - run --scan separately ***"
+    print(f"    {c('Password', 'b') if COLOR_ENABLED else 'Password'} : {pw}")
 
     if protocols:
-        print(f"\n  Protocols ({len(protocols)}):")
+        hdr = c(f"Protocols ({len(protocols)}):", 'B') if COLOR_ENABLED else f"Protocols ({len(protocols)}):"
+        print(f"\n  {hdr}")
         for p in protocols:
-            print(f"    {p['proto'].upper():4s}  {p['port']:6s}  ({p['key']})")
+            pp = c(p['proto'].upper(), 'y') if COLOR_ENABLED else p['proto'].upper()
+            pk = c(f"({p['key']})", 'c') if COLOR_ENABLED else f"({p['key']})"
+            print(f"    {pp:4s}  {p['port']:6s}  {pk}")
 
     if servers and protocols:
-        print(f"\n  All --run combinations ({len(servers) * len(protocols)} total, by country):\n")
+        hdr = c(f"All --run combinations ({len(servers) * len(protocols)} total, by country):", 'B') if COLOR_ENABLED else f"All --run combinations ({len(servers) * len(protocols)} total, by country):"
+        print(f"\n  {hdr}\n")
         cc_map = {}
         for s in servers:
             cc = s.get("country_code", "??")
@@ -363,13 +413,16 @@ def print_static_options(servers, protocols, username, password):
                              "DE": "Germany", "FR": "France"}.get(cc, cc)
             group = cc_map[cc]
             header = f"  [{country_label} ({cc})]"
+            if COLOR_ENABLED:
+                header = c(c(header, 'B'), 'y')
             print(f"  {'─' * (len(header) - 2)}")
             print(header)
             print(f"  {'─' * (len(header) - 2)}")
             for s in group:
                 for p in protocols:
                     proto_flag = "U" if p["proto"] == "udp" else "T"
-                    print(f"    --run {s['id']},{p['key']:12s}  # {proto_flag}:{p['port']}  {s['hostname']}")
+                    sid = c(s['id'], 'c') if COLOR_ENABLED else s['id']
+                    print(f"    --run {sid},{p['key']:12s}  # {proto_flag}:{p['port']}  {s['hostname']}")
 
     print(f"\n{'=' * 60}\n")
 
@@ -403,47 +456,103 @@ def parse_addroute(value):
 
 def _add_route(network_cidr, gateway):
     cmd = ["sudo", "ip", "route", "add", network_cidr, "via", gateway]
-    print(f"[*] Adding route: {' '.join(cmd)}")
+    print(color_status(f"Adding route: {' '.join(cmd)}", '*'))
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
-        print(f"[!] Failed to add route: {result.stderr.strip()}", file=sys.stderr)
+        print(color_status(f"Failed to add route: {result.stderr.strip()}", '!'), file=sys.stderr)
         return False
-    print(f"[+] Route added: {network_cidr} via {gateway}")
+    print(color_status(f"Route added: {network_cidr} via {gateway}", '+'))
     return True
 
 
 def _del_route(network_cidr, gateway):
     cmd = ["sudo", "ip", "route", "del", network_cidr, "via", gateway]
-    print(f"[*] Removing route: {' '.join(cmd)}")
+    print(color_status(f"Removing route: {' '.join(cmd)}", '*'))
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
-        print(f"[!] Failed to remove route: {result.stderr.strip()}", file=sys.stderr)
+        print(color_status(f"Failed to remove route: {result.stderr.strip()}", '!'), file=sys.stderr)
         return False
-    print(f"[-] Route removed: {network_cidr} via {gateway}")
+    print(color_status(f"Route removed: {network_cidr} via {gateway}", '-'))
     return True
 
 
-def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None, addroute=None):
+def show_connection_info(tun_device=None):
+    """Display public IP and both tunnel addresses after VPN connection."""
+    print()
+    print(color_header("  Connection Info"))
+    print()
+
+    # Tunnel addresses from the tun interface
+    if tun_device:
+        try:
+            result = subprocess.run(
+                ["ip", "addr", "show", "dev", tun_device],
+                capture_output=True, text=True, timeout=5
+            )
+            m = re.search(r'inet (\S+) peer (\S+)', result.stdout)
+            if m:
+                local_ip = m.group(1)
+                peer_ip = re.sub(r'/\d+$', '', m.group(2))
+                print(f"  {c('Tunnel Interface', 'y') if COLOR_ENABLED else 'Tunnel Interface'} "
+                      f"({c(tun_device, 'c') if COLOR_ENABLED else tun_device}):")
+                print(f"    {c('Local IP', 'b') if COLOR_ENABLED else 'Local IP'} : "
+                      f"{c(local_ip, 'c') if COLOR_ENABLED else local_ip}")
+                print(f"    {c('Peer IP ', 'b') if COLOR_ENABLED else 'Peer IP '} : "
+                      f"{c(peer_ip,  'c') if COLOR_ENABLED else peer_ip}")
+            else:
+                print(f"  {color_status('Could not parse tunnel addresses from ip addr', '!')}")
+        except Exception as e:
+            print(f"  {color_status(f'Error getting tunnel info: {e}', '!')}")
+
+    # Public IP (via the VPN tunnel)
+    for service in ("https://ifconfig.me/ip", "https://api.ipify.org", "https://ipinfo.io/ip"):
+        try:
+            public_ip = fetch_url(service, timeout=10).strip()
+            label = c('Public IP (via VPN)', 'y') if COLOR_ENABLED else 'Public IP (via VPN)'
+            value = c(public_ip, 'c') if COLOR_ENABLED else public_ip
+            print(f"\n  {label}: {value}")
+            break
+        except Exception:
+            continue
+    else:
+        print(f"\n  {color_status('Could not determine public IP', '!')}")
+
+    print(f"\n{'=' * 60}\n")
+
+
+def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None, addroute=None, showip=False):
     cmd = ["sudo", "openvpn", "--client", "--config", config_path]
-    print(f"[*] Running: {' '.join(cmd)}\n")
+    print(color_status(f"Running: {' '.join(cmd)}", '*'))
+    print()
     process = None
     try:
         process = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             preexec_fn=os.setpgrp, universal_newlines=True, bufsize=1)
     except FileNotFoundError:
-        print("[!] 'sudo' or 'openvpn' not found. Install them or check your PATH.",
+        print(color_status("'sudo' or 'openvpn' not found. Install them or check your PATH.", '!'),
               file=sys.stderr)
         return
 
     route_added = False
     connected_event = threading.Event()
+    tun_dev_info = [None]
+    ip_shown = [False]
 
     def _output_reader():
         for line in process.stdout:
-            print(line, end='', flush=True)
+            if COLOR_ENABLED:
+                print(c(line, 'c') if 'Initialization Sequence Completed' in line else line, end='', flush=True)
+            else:
+                print(line, end='', flush=True)
             if 'Initialization Sequence Completed' in line:
                 connected_event.set()
+            m = re.search(r'TUN/TAP device (tun\d+) opened', line)
+            if m:
+                tun_dev_info[0] = m.group(1)
+            m2 = re.search(r'/sbin/ip link set dev (tun\d+) up', line)
+            if m2:
+                tun_dev_info[0] = m2.group(1)
 
     reader = threading.Thread(target=_output_reader, daemon=True)
     reader.start()
@@ -453,7 +562,16 @@ def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None,
         if connected:
             route_added = _add_route(*addroute)
         else:
-            print("[!] OpenVPN not connected after 15s, route not added.", file=sys.stderr)
+            print(color_status("OpenVPN not connected after 15s, route not added.", '!'), file=sys.stderr)
+
+    # Show connection info as soon as VPN is connected (tunnel is active)
+    if showip:
+        def _showip_on_connect():
+            connected_event.wait()
+            time.sleep(1)  # allow interface to stabilize
+            show_connection_info(tun_dev_info[0])
+            ip_shown[0] = True
+        threading.Thread(target=_showip_on_connect, daemon=True).start()
 
     def _kill_pg():
         try:
@@ -475,7 +593,7 @@ def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None,
             while True:
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
-                    print(f"\n[*] Timeout reached ({timeout_str}), terminating OpenVPN...")
+                    print(f"\n{color_status(f'Timeout reached ({timeout_str}), terminating OpenVPN...', '*')}")
                     _kill_pg()
                     try:
                         process.wait(timeout=5)
@@ -487,7 +605,8 @@ def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None,
                 hrs = int(remaining // 3600)
                 mins = int((remaining % 3600) // 60)
                 secs = int(remaining % 60)
-                print(f"\r[*] Time remaining: {hrs:02d}:{mins:02d}:{secs:02d}  ", end='', flush=True)
+                ts = c(f"{hrs:02d}:{mins:02d}:{secs:02d}", 'y') if COLOR_ENABLED else f"{hrs:02d}:{mins:02d}:{secs:02d}"
+                print(f"\r{color_status('Time remaining:', '*')} {ts}  ", end='', flush=True)
 
                 try:
                     process.wait(timeout=1)
@@ -499,7 +618,7 @@ def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None,
             process.wait()
     except KeyboardInterrupt:
         print()
-        print("\n[*] OpenVPN terminated by user.")
+        print(color_status("OpenVPN terminated by user.", '*'))
         _kill_pg()
         try:
             process.wait(timeout=5)
@@ -511,7 +630,7 @@ def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None,
             _del_route(*addroute)
         if temp_auth_file and os.path.exists(temp_auth_file.name):
             os.unlink(temp_auth_file.name)
-            print(f"[*] Temp auth file {temp_auth_file.name} removed.")
+            print(color_status(f"Temp auth file {temp_auth_file.name} removed.", '*'))
 
 
 # ---------------------------------------------------------------------------
@@ -564,41 +683,48 @@ def main():
                         help="Add route NET/MASK via GATEWAY after VPN connects; "
                              "route is removed when VPN disconnects "
                              "(e.g. 192.168.53.0/24,10.10.10.1)")
+    parser.add_argument("--showip", action="store_true",
+                        help="After connection, show public IP and tunnel addresses")
+    parser.add_argument("--color", action="store_true",
+                        help="Colorize output with ANSI colors")
     args = parser.parse_args()
+
+    global COLOR_ENABLED
+    COLOR_ENABLED = args.color
 
     timeout_seconds = None
     if args.timeout is not None:
         m = re.match(r"^(\d{2}):(\d{2}):(\d{2})$", args.timeout)
         if not m:
-            print("[!] --timeout requires format HH:MM:SS (e.g. 01:30:00)",
+            print(color_status("--timeout requires format HH:MM:SS (e.g. 01:30:00)", '!'),
                   file=sys.stderr)
             return
         h, mn, s = int(m.group(1)), int(m.group(2)), int(m.group(3))
         if mn >= 60 or s >= 60:
-            print("[!] --timeout: minutes and seconds must be less than 60",
+            print(color_status("--timeout: minutes and seconds must be less than 60", '!'),
                   file=sys.stderr)
             return
         timeout_seconds = h * 3600 + mn * 60 + s
         if timeout_seconds == 0:
-            print("[!] --timeout must be greater than 00:00:00", file=sys.stderr)
+            print(color_status("--timeout must be greater than 00:00:00", '!'), file=sys.stderr)
             return
 
     # -- --- --user / --pwd / --datafile validation ----------------------------
     if (args.user or args.pwd) and not args.run:
-        print("[!] --user/--pwd can only be used with --run", file=sys.stderr)
+        print(color_status("--user/--pwd can only be used with --run", '!'), file=sys.stderr)
         return
     if bool(args.user) != bool(args.pwd):
-        print("[!] --user and --pwd must be used together", file=sys.stderr)
+        print(color_status("--user and --pwd must be used together", '!'), file=sys.stderr)
         return
     if args.datafile and not args.run:
-        print("[!] --datafile can only be used with --run", file=sys.stderr)
+        print(color_status("--datafile can only be used with --run", '!'), file=sys.stderr)
         return
     if args.datafile and (args.user or args.pwd):
-        print("[!] --datafile and --user/--pwd are mutually exclusive",
+        print(color_status("--datafile and --user/--pwd are mutually exclusive", '!'),
               file=sys.stderr)
         return
     if args.addroute and not args.run:
-        print("[!] --addroute can only be used with --run", file=sys.stderr)
+        print(color_status("--addroute can only be used with --run", '!'), file=sys.stderr)
         return
 
     # -- --- parse --run -------------------------------------------------------
@@ -612,14 +738,14 @@ def main():
     if args.run:
         if args.run.endswith(".ovpn"):
             if not os.path.isfile(args.run):
-                print(f"[!] File '{args.run}' not found.", file=sys.stderr)
+                print(color_status(f"File '{args.run}' not found.", '!'), file=sys.stderr)
                 return
             run_ovpn_file = os.path.abspath(args.run)
         else:
             parts = args.run.split(",")
             if len(parts) != 2:
-                print("[!] --run requires server_id,protocol_key "
-                       "(e.g. us16,tcp443) or a .ovpn file path",
+                print(color_status("--run requires server_id,protocol_key "
+                       "(e.g. us16,tcp443) or a .ovpn file path", '!'),
                        file=sys.stderr)
                 return
             run_server, run_protocol = parts[0].strip(), parts[1].strip()
@@ -628,8 +754,9 @@ def main():
     if run_server:
         matched = [s for s in FALLBACK_SERVERS if s["id"] == run_server]
         if not matched:
-            print(f"[!] Server '{run_server}' not found.", file=sys.stderr)
-            print(f"[!] Use one of the following:\n", file=sys.stderr)
+            print(color_status(f"Server '{run_server}' not found.", '!'), file=sys.stderr)
+            print(color_status("Use one of the following:", '!'), file=sys.stderr)
+            print()
             print_static_options(FALLBACK_SERVERS, FALLBACK_PROTOCOLS,
                                  FALLBACK_USERNAME, FALLBACK_PASSWORD)
             return
@@ -637,8 +764,9 @@ def main():
     if run_protocol:
         matched = [p for p in FALLBACK_PROTOCOLS if p["key"] == run_protocol]
         if not matched:
-            print(f"[!] Protocol '{run_protocol}' not found.", file=sys.stderr)
-            print(f"[!] Use one of the following:\n", file=sys.stderr)
+            print(color_status(f"Protocol '{run_protocol}' not found.", '!'), file=sys.stderr)
+            print(color_status("Use one of the following:", '!'), file=sys.stderr)
+            print()
             print_static_options(FALLBACK_SERVERS, FALLBACK_PROTOCOLS,
                                  FALLBACK_USERNAME, FALLBACK_PASSWORD)
             return
@@ -656,7 +784,7 @@ def main():
         # --datafile overrides any existing auth-user-pass in the config
         if args.datafile:
             if not os.path.isfile(args.datafile):
-                print(f"[!] Data file '{args.datafile}' not found.",
+                print(color_status(f"Data file '{args.datafile}' not found.", '!'),
                       file=sys.stderr)
                 return
             datafile_path = os.path.abspath(args.datafile)
@@ -684,7 +812,7 @@ def main():
                 if args.user and args.pwd:
                     u, p = args.user, args.pwd
                 else:
-                    print("[*] Provide credentials for VPN connection:")
+                    print(color_status("Provide credentials for VPN connection:", '*'))
                     u = input("Username: ").strip()
                     p = getpass.getpass("Password: ")
                 tmp = tempfile.NamedTemporaryFile(
@@ -718,16 +846,16 @@ def main():
                 with open(config_path, 'w') as f:
                     f.write(config)
                 temp_config_path = config_path
-                print(f"[*] Original file is read-only, using copy: {config_path}")
+                print(color_status(f"Original file is read-only, using copy: {config_path}", '*'))
         else:
             config_path = run_ovpn_file
 
-        _run_openvpn(config_path, timeout_seconds, args.timeout, run_temp_auth, args.addroute)
+        _run_openvpn(config_path, timeout_seconds, args.timeout, run_temp_auth, args.addroute, args.showip)
 
         # Clean up the temporary config copy if one was created
         if temp_config_path and os.path.exists(temp_config_path):
             os.unlink(temp_config_path)
-            print(f"[*] Temporary config copy {temp_config_path} removed.")
+            print(color_status(f"Temporary config copy {temp_config_path} removed.", '*'))
 
         return
 
@@ -744,12 +872,12 @@ def main():
         servers, protocols, credentials = scan()
 
     if servers is None:
-        print("[!] Could not fetch server list from website, "
-              "using built-in fallback.", file=sys.stderr)
+        print(color_status("Could not fetch server list from website, "
+              "using built-in fallback.", '!'), file=sys.stderr)
         servers = FALLBACK_SERVERS
     if protocols is None:
-        print("[!] Could not fetch protocol list from website, "
-              "using built-in fallback.", file=sys.stderr)
+        print(color_status("Could not fetch protocol list from website, "
+              "using built-in fallback.", '!'), file=sys.stderr)
         protocols = FALLBACK_PROTOCOLS
 
     # -- --- filter by country -------------------------------------------------
@@ -757,7 +885,7 @@ def main():
         cc = args.get.upper()
         servers = [s for s in servers if s.get("country_code", "").upper() == cc]
         if not servers:
-            print(f"[!] No servers found for country '{args.get.upper()}'.",
+            print(color_status(f"No servers found for country '{args.get.upper()}'.", '!'),
                   file=sys.stderr)
             return
 
@@ -768,7 +896,7 @@ def main():
         protocols = [p for p in protocols if p["port"] == args.port]
 
     if not protocols:
-        print("[!] No matching protocols.", file=sys.stderr)
+        print(color_status("No matching protocols.", '!'), file=sys.stderr)
         return
 
     # -- --- --run post-scan validation (further filter by live data) ----------
@@ -800,7 +928,7 @@ def main():
     if args.run and not auth_config_ref:
         if args.datafile:
             if not os.path.isfile(args.datafile):
-                print(f"[!] Data file '{args.datafile}' not found.",
+                print(color_status(f"Data file '{args.datafile}' not found.", '!'),
                       file=sys.stderr)
                 return
             auth_config_ref = os.path.abspath(args.datafile)
@@ -820,7 +948,7 @@ def main():
             password = "*** unknown – run --scan separately ***"
         with open(auth_save_path, "w") as f:
             f.write(f"{username}\n{password}\n")
-        print(f"[*] Credentials saved to {auth_save_path}")
+        print(color_status(f"Credentials saved to {auth_save_path}", '*'))
 
     # -- --- decide whether to download ----------------------------------------
     has_download_opt = (args.get is not None or args.proto is not None
@@ -837,18 +965,20 @@ def main():
     ok = 0
     saved_paths = []
 
-    print(f"[*] Downloading {total} config(s) from VPNBook...\n")
+    print(color_status(f"Downloading {total} config(s) from VPNBook...", '*'))
+    print()
 
     for server in servers:
         for protocol in protocols:
             sid = server["id"]
             port_str = protocol["port"]
-            print(f"  [{sid}] [{protocol['proto'].upper()} {port_str}] ",
+            label = c(f"[{sid}] [{protocol['proto'].upper()} {port_str}]", 'b') if COLOR_ENABLED else f"  [{sid}] [{protocol['proto'].upper()} {port_str}]"
+            print(f"{'  ' if not COLOR_ENABLED else ''}{label} ",
                   end="", flush=True)
 
             config = download_config(server, protocol)
             if config is None:
-                print("SKIP")
+                print(c("SKIP", 'r') if COLOR_ENABLED else "SKIP")
                 continue
 
             if auth_config_ref:
@@ -860,18 +990,18 @@ def main():
             saved_paths.append(save_config(server, protocol, config))
             ok += 1
 
-    print(f"\n[*] Done: {ok}/{total} config(s) downloaded successfully.")
+    print(f"\n{color_status(f'Done: {ok}/{total} config(s) downloaded successfully.', '+')}")
     if ok < total:
-        print(f"[!] {total - ok} config(s) failed to download.", file=sys.stderr)
+        print(color_status(f"{total - ok} config(s) failed to download.", '!'), file=sys.stderr)
 
     if username and password:
-        print(f"\n[*] VPN credentials:")
-        print(f"    Username: {username}")
-        print(f"    Password: {password}")
+        print(f"\n{color_status('VPN credentials:', '*')}")
+        print(f"    {c('Username', 'b') if COLOR_ENABLED else 'Username'}: {c(username, 'y') if COLOR_ENABLED else username}")
+        print(f"    {c('Password', 'b') if COLOR_ENABLED else 'Password'}: {c(password, 'y') if COLOR_ENABLED else password}")
 
     # -- --- --run: execute openvpn (with sudo) and clean up temp auth file -----
     if args.run and saved_paths:
-        _run_openvpn(saved_paths[0], timeout_seconds, args.timeout, run_temp_auth, args.addroute)
+        _run_openvpn(saved_paths[0], timeout_seconds, args.timeout, run_temp_auth, args.addroute, args.showip)
 
 
 if __name__ == "__main__":

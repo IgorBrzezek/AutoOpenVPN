@@ -61,7 +61,7 @@ Print the application name, version number and author, then exit.
 
 ```bash
 python ovpnmonitor.py --version
-# OVPNMonitor v0.0.2a by Igor Brzezek
+# OVPNMonitor v0.0.3 by Igor Brzezek
 ```
 
 ### `--pathping IP`
@@ -106,7 +106,7 @@ The screen is divided into four areas:
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  OVPNMonitor v0.0.2a              ONLINE               PAUSED │  ← Top bar
+│  OVPNMonitor v0.0.3              ONLINE               PAUSED │  ← Top bar
 ├──────────────────────┬───────────────────────────────────────┤
 │  Traffic Statistics  │  Ping Monitor                         │  ← Row 1
 │  ── TUN ──           │  gateway   12 ms ████████████▒▒▒ OK   │
@@ -120,24 +120,27 @@ The screen is divided into four areas:
 │  VPN Gateway: 10.8..│  MAC:        08:00:27:...             │
 │  ...                 │  IPv4/Mask:  10.0.2.15/24 [24]       │
 ├──────────────────────┴───────────────────────────────────────┤
-│  hostname      H:Help I:Info N:Ping R:Routes P:Pause Q:Quit │  ← Bottom bar
+│  hostname      H:Help I:Info N:Ping R:Routes A:IP T:Trace P:Pause Q:Quit │  ← Bottom bar
 └──────────────────────────────────────────────────────────────┘
 ```
 
 ### Top Status Bar
 - **Left**: Application name and version.
 - **Center**: Connection state — `ONLINE` (green) or `OFFLINE` (red).
-- **Right**: `PAUSED` (blinking) when collectors are paused.
+- **Right**: Public IP address (toggle with `A` key, configurable color/char).
+- **Far Right**: `PAUSED` (blinking) when collectors are paused.
 
 ### Bottom Status Bar
 - **Left**: Hostname of the machine.
-- **Center**: Available keyboard shortcuts.
+- **Center**: Available keyboard shortcuts (H,I,N,R,A,T,P,Q).
 - **Right**: Current date and time.
 
 ### Row 1 — Traffic Statistics + Ping Monitor
 - **Traffic Statistics**: For each VPN (TUN) and local interface,
   shows download/upload rates (KB/s), total session bytes (Tx/Rx),
-  and packet rates (p/s).
+  and packet rates (p/s). Use **arrow keys** to scroll when content
+  exceeds the panel height; scroll indicators (▲▼) appear in the
+  title bar.
 - **Ping Monitor**: For each configured target, shows latency in
   milliseconds and a visual bar. Colors indicate severity (green =
   good, yellow = warning, red = critical).
@@ -147,27 +150,39 @@ The screen is divided into four areas:
   address, protocol/port, interface name, PID, uptime, and config
   file path.
 - **Local Interfaces**: Interface name, MAC address, IPv4 with
-  CIDR mask, IPv6, and DHCP status.
+  CIDR mask, IPv6, and DHCP status. In multi-interface mode the
+  panel is scrollable with **arrow keys** (▲▼ indicator in title).
 
 ### Row 3 — Path Ping (if configured)
 Shows the traceroute path to the configured target, one hop per line.
 If the route changes, the previous route is shown below.
 
+### Traceroute Dialog (T key)
+Opens a text input popup where you enter an IP address or hostname.
+Press Enter to run a custom traceroute (UDP probes with TTL, no system
+tools required). Results are shown hop-by-hop in real time; `*`
+indicates a hop that did not respond (ICMP blocked or timeout). Use
+**arrow keys**, **Page Up** / **Page Down** to scroll through results.
+
 ---
 
 ## Keyboard Shortcuts
 
-| Key          | Action                                       |
-|--------------|----------------------------------------------|
-| `H` / `F1`   | Toggle help popup                            |
-| `I`          | Toggle program info popup                    |
-| `N`          | Show/hide the Ping Monitor panel             |
-| `R`          | Show the system routing table                |
-|              | (VPN routes highlighted in yellow)           |
-| `U`          | Force-refresh the public IP address          |
-| `P`          | Pause/resume all data collectors             |
-| `Q`          | Quit the application                         |
-| `ESC`        | Close any open popup                         |
+| Key              | Action                                           |
+|------------------|--------------------------------------------------|
+| `H` / `F1`       | Toggle help popup                                |
+| `I`              | Toggle program info popup                        |
+| `N`              | Show/hide the Ping Monitor panel                 |
+| `R`              | Show the system routing table                    |
+|                  | (VPN routes highlighted in yellow)               |
+| `U`              | Force-refresh the public IP address              |
+| `A`              | Toggle public IP display in top bar              |
+| `T`              | Open traceroute dialog (enter IP/host)           |
+| `P`              | Pause/resume all data collectors                 |
+| `Q`              | Quit the application                             |
+| `ESC`            | Close any open popup                             |
+| `▲` / `▼`        | Scroll panels / traceroute results (1 line)      |
+| `PgUp` / `PgDn`  | Scroll panels / traceroute results (5 lines)     |
 
 When a popup (Help, Info, Routes) is open, `Q` does not quit —
 press `ESC` first or toggle the popup off.
@@ -216,7 +231,7 @@ own interval (configurable in the config file):
 | TrafficCollector     | Reads per-interface byte/packet counters,          |
 |                      | computes rates (bytes/s, packets/s)                |
 | LocalTrafficCollector| Same as above but for local (physical) interfaces  |
-| IPCollector          | Fetches public IP via `api.ipify.org`              |
+| IPCollector          | Fetches public IP via `checkip.amazonaws.com`       |
 | GatewayCollector     | Reads default + VPN gateway from `/proc/net/route` |
 | LocalNetworkCollector| Detects local interfaces, IPs, MAC, DHCP status    |
 | PingCollector        | Pings each configured target (one thread per target)|
@@ -240,7 +255,7 @@ If none is found, all defaults are used.
 | Key                 | Default     | Description                                    |
 |---------------------|-------------|------------------------------------------------|
 | `app_name`          | OVPNMonitor | Name shown in the top status bar               |
-| `version`           | 0.0.2a       | Version string                                 |
+| `version`           | 0.0.3        | Version string                                 |
 | `author`            | Igor Brzezek| Author name                                    |
 | `background_char`   | (space)     | Fill character for the screen background       |
 | `refresh_interval_s`| 1           | UI refresh rate in seconds (1-5)               |
@@ -248,6 +263,7 @@ If none is found, all defaults are used.
 | `local_interface`   | (empty)     | Local interface name or `all`; empty = auto    |
 | `log_file`          | (empty)     | Path to log file (empty = no logging)          |
 | `pathping_target`   | (empty)     | Target IP for path ping; empty = disabled      |
+| `show_public_ip`    | false       | Show public IP in top bar by default            |
 
 **Example:**
 ```ini
@@ -270,6 +286,8 @@ pathping_target = 10.8.0.1
 | `toggle_pause` | p       | Pause/resume collectors         |
 | `toggle_ping`  | n       | Show/hide ping monitor panel    |
 | `show_routes`  | r       | Show routes table popup         |
+| `toggle_ip`    | a       | Toggle public IP in top bar     |
+| `traceroute`   | t       | Open traceroute input dialog     |
 
 **Example:**
 ```ini
@@ -283,7 +301,7 @@ show_routes = t
 
 | Key                  | Default                   | Description                            |
 |----------------------|---------------------------|----------------------------------------|
-| `ip_check_url`       | https://api.ipify.org     | URL for public IP detection            |
+| `ip_check_url`       | https://checkip.amazonaws.com | URL for public IP detection        |
 | `ip_check_interval`  | 5                         | Public IP check interval (seconds)     |
 | `ping_enabled`       | true                      | Enable/disable all pings               |
 | `ping_target_1..3`   | gateway,5000 / 8.8.8.8,5000 / 1.1.1.1,5000 | Ping targets with interval |
@@ -320,6 +338,9 @@ ping_warn_ms = 60
 |------------------|---------|------------------------------------------------|
 | `ping_bar_width` | 25      | Width of the ping latency bar in characters     |
 | `border_style`   | double  | Window border style: `single` or `double`       |
+| `public_ip_char` | ░       | Prefix character before IP in top bar           |
+| `traceroute_input_char` | (space)  | Fill character for traceroute input field    |
+| `traceroute_input_width` | 17      | Width of the traceroute input field           |
 
 The `double` style uses Unicode double-line characters (╔═╗║╚═╝).
 The `single` style uses single-line characters (┌─┐│└─┘) for a
@@ -335,8 +356,11 @@ border_style = single
 ### Section `[colors]`
 
 Every UI element can be customised with `foreground,background` color
-pairs. Available color names: `black`, `red`, `green`, `yellow`,
-`blue`, `magenta`, `cyan`, `white`.
+pairs. Colors can be specified as names (`black`, `red`, `green`,
+`yellow`, `blue`, `magenta`, `cyan`, `white`, `orange`) or as hex
+RGB (`#RRGGBB`). On terminals supporting `can_change_color()`, hex
+values define custom colors; otherwise the nearest named color is
+used as fallback.
 
 | Key                  | Default        | Element                                  |
 |----------------------|----------------|------------------------------------------|
@@ -356,6 +380,10 @@ pairs. Available color names: `black`, `red`, `green`, `yellow`,
 | `popup_border`       | yellow,black   | Popup window border                      |
 | `popup_bg`           | white,black    | Popup interior text                      |
 | `window_bgcolor`     | black          | Interior fill of content panels          |
+| `public_ip_bar`      | white,blue     | Public IP text in top status bar         |
+| `traceroute_border`  | yellow,black   | Traceroute popup border                  |
+| `traceroute_bg`      | white,black    | Traceroute popup interior                |
+| `traceroute_input`   | black,orange   | Traceroute IP input field                |
 | `ping_ok`            | green,black    | Latency below ping_ok_ms                 |
 | `ping_warn`          | yellow,black   | Latency between ok and warn              |
 | `ping_high`          | yellow,black   | Latency between warn and high            |

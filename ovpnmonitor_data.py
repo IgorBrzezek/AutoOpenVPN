@@ -6,8 +6,10 @@ public IP, ping latency, and gateway information. Results are stored
 in a shared MonitorState object protected by a threading lock.
 """
 
+import errno
 import os
 import re
+import select
 import socket
 import subprocess
 import sys
@@ -110,6 +112,68 @@ class MonitorState:
 
     # Collector errors
     errors: List[str] = field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
+# Custom traceroute (UDP probes with TTL, no system tools)
+# ---------------------------------------------------------------------------
+
+_IP_RECVERR = 11
+_MSG_ERRQUEUE = 0x2000
+
+
+def custom_traceroute(dest_ip: str, max_hops: int = 30, timeout: float = 2.0,
+                      progress_callback=None) -> Optional[List[Optional[str]]]:
+    """Custom traceroute using raw UDP probes with varying TTL.
+
+    Uses IP_RECVERR + error queue to capture ICMP Time Exceeded
+    messages — no system tools (traceroute/mtr) needed.
+    Returns list of hop IPs (or None for timeout) or None on error.
+    """
+    try:
+        dest = socket.gethostbyname(dest_ip)
+    except socket.gaierror:
+        return None
+
+    results: List[Optional[str]] = []
+
+    for ttl in range(1, max_hops + 1):
+        hop = None
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        s.setsockopt(socket.SOL_IP, socket.IP_TTL, ttl)
+        try:
+            s.setsockopt(socket.SOL_IP, _IP_RECVERR, 1)
+        except OSError:
+            pass
+        s.settimeout(timeout)
+
+        try:
+            s.sendto(b"\x00" * 40, (dest, 33434 + ttl))
+            r, _, _ = select.select([s], [], [], timeout)
+            if r:
+                try:
+                    data, ancdata, flags, addr = s.recvmsg(1024, 1024, _MSG_ERRQUEUE)
+                    for level, ctype, cdata in ancdata:
+                        if level == socket.SOL_IP and ctype == _IP_RECVERR and len(cdata) >= 24:
+                            hop = socket.inet_ntoa(cdata[20:24])
+                            break
+                except (BlockingIOError, InterruptedError):
+                    pass
+        except socket.timeout:
+            pass
+        except OSError as e:
+            if e.errno in (errno.EHOSTUNREACH, errno.ECONNREFUSED):
+                hop = dest
+        finally:
+            s.close()
+
+        results.append(hop)
+        if progress_callback:
+            progress_callback(ttl, hop)
+        if hop == dest:
+            break
+
+    return results
 
 
 # ---------------------------------------------------------------------------
@@ -781,7 +845,7 @@ class TrafficCollector(CollectorThread):
                         td.packets_sent_rate = max(0, (ps - td._prev_packets_sent) / dt)
                         td.packets_recv_rate = max(0, (pr - td._prev_packets_recv) / dt)
 
-                if td._session_base_sent < 0:
+                if td._session_base_sent < 0 or bs < td._session_base_sent:
                     td._session_base_sent = bs
                     td._session_base_recv = br
                 td.session_bytes_sent = bs - td._session_base_sent
@@ -830,7 +894,7 @@ class LocalTrafficCollector(CollectorThread):
                         td.packets_sent_rate = max(0, (ps - td._prev_packets_sent) / dt)
                         td.packets_recv_rate = max(0, (pr - td._prev_packets_recv) / dt)
 
-                if td._session_base_sent < 0:
+                if td._session_base_sent < 0 or bs < td._session_base_sent:
                     td._session_base_sent = bs
                     td._session_base_recv = br
                 td.session_bytes_sent = bs - td._session_base_sent

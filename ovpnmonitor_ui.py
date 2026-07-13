@@ -9,11 +9,12 @@ import curses
 import os
 import socket
 import struct
+import threading
 import time
-from typing import Optional
+from typing import List, Optional
 
 from ovpnmonitor_cfg import Config, get_attr
-from ovpnmonitor_data import MonitorState, get_all_routes
+from ovpnmonitor_data import MonitorState, custom_traceroute, get_all_routes
 
 # ---------------------------------------------------------------------------
 # Unicode box-drawing characters (double line)
@@ -210,10 +211,22 @@ class UIManager:
         self.show_help = False
         self.show_info = False
         self.show_ping = True
+        self.show_ip = cfg.show_public_ip
         self.show_warning = bool(self.cfg.warnings)
         self.show_routes = False
         self._routes_cache = []
         self.hostname = socket.gethostname()
+
+        # Traceroute state
+        self.traceroute_state = "idle"   # idle | input | running | done
+        self.traceroute_buffer = ""
+        self.traceroute_results: Optional[List[Optional[str]]] = None
+        self.traceroute_thread: Optional[threading.Thread] = None
+        self.traceroute_scroll = 0
+
+        # Panel scroll offsets
+        self.traffic_scroll = 0
+        self.local_scroll = 0
 
     def get_size(self):
         h, w = self.stdscr.getmaxyx()
@@ -243,6 +256,15 @@ class UIManager:
         if self.show_routes:
             self._draw_routes_popup(h, w)
 
+        if self.traceroute_state == "input":
+            self._draw_traceroute_input_popup(h, w)
+        elif self.traceroute_state in ("running", "done"):
+            # Check if thread finished
+            if (self.traceroute_state == "running" and
+                self.traceroute_thread and not self.traceroute_thread.is_alive()):
+                self.traceroute_state = "done"
+            self._draw_traceroute_results_popup(h, w)
+
         self.stdscr.noutrefresh()
         curses.doupdate()
 
@@ -261,6 +283,7 @@ class UIManager:
         with self.state.lock:
             connected = self.state.vpn_connected
             paused = self.state.paused
+            public_ip = self.state.public_ip
 
         if connected:
             status_text = " ONLINE "
@@ -271,6 +294,17 @@ class UIManager:
 
         sx = (w - len(status_text)) // 2
         safe_addstr(self.stdscr, 0, sx, status_text, status_attr | curses.A_REVERSE)
+
+        # Right: public IP (if enabled)
+        if self.show_ip and public_ip:
+            ip_attr = get_attr(self.cfg, "public_ip_bar", bold=True)
+            ip_str = f" {self.cfg.display.public_ip_char} {public_ip} "
+            if paused:
+                ip_x = w - len(ip_str) - 10
+            else:
+                ip_x = w - len(ip_str)
+            if ip_x > 0:
+                safe_addstr(self.stdscr, 0, ip_x, ip_str, ip_attr)
 
         # Right: paused indicator
         if paused:
@@ -286,7 +320,7 @@ class UIManager:
         safe_addstr(self.stdscr, y, 1, self.hostname, attr)
 
         # Center: key hints
-        hints = "H:Help  I:Info  N:Ping  R:Routes  P:Pause  Q:Quit"
+        hints = "H:Help  I:Info  N:Ping  R:Routes  A:IP  T:Trace  P:Pause  Q:Quit"
         hx = (w - len(hints)) // 2
         safe_addstr(self.stdscr, y, hx, hints, attr)
 
@@ -380,27 +414,21 @@ class UIManager:
 
         # ── Row 1: Traffic (left) ──
         if content_y + row1_h <= content_end:
-            draw_double_box(self.stdscr, content_y, traffic_x, row1_h, traffic_w,
-                          "Traffic Statistics", border_attr, title_attr, win_bg_attr)
             lx = traffic_x + 2
             name_w = 6
             cw = traffic_w - 4
             dcw = min(12, max(5, (cw - name_w - 7) // 6))
-            row = content_y + 2
+
+            lines = []
 
             # TUN section
-            safe_addstr(self.stdscr, row, lx, f" {BOX_H * 2} TUN {BOX_H * 2}", label_attr | curses.A_BOLD)
-            row += 1
-            safe_addstr(self.stdscr, row, lx,
-                       " Intf  " + f"{ARROW_DOWN}".rjust(dcw) + " " +
-                       f"{ARROW_UP}".rjust(dcw) + " " +
-                       "Tx".rjust(dcw) + " Rx".rjust(dcw) + " " +
-                       "P↓".rjust(dcw) + " P↑".rjust(dcw), label_attr)
-            row += 1
+            lines.append((f" {BOX_H * 2} TUN {BOX_H * 2}", label_attr | curses.A_BOLD))
+            lines.append((" Intf  " + f"{ARROW_DOWN}".rjust(dcw) + " " +
+                          f"{ARROW_UP}".rjust(dcw) + " " +
+                          "Tx".rjust(dcw) + " Rx".rjust(dcw) + " " +
+                          "P↓".rjust(dcw) + " P↑".rjust(dcw), label_attr))
             if vpn_ifaces:
                 for iface in vpn_ifaces:
-                    if row >= content_y + traffic_h - 1:
-                        break
                     name = (iface.get("name", "") or "?")[:name_w].ljust(name_w)
                     td = snap["ifaces_traffic"].get(iface.get("name", ""), {})
                     line = " " + name + " " + \
@@ -410,41 +438,52 @@ class UIManager:
                            format_bytes(td.get("session_bytes_recv", 0))[:dcw].rjust(dcw) + " " + \
                            format_pps(td.get("packets_recv_rate", 0))[:dcw].rjust(dcw) + " " + \
                            format_pps(td.get("packets_sent_rate", 0))[:dcw].rjust(dcw)
-                    safe_addstr(self.stdscr, row, lx, line, value_attr)
-                    row += 1
+                    lines.append((line, value_attr))
             else:
-                safe_addstr(self.stdscr, row, lx, " No TUN interface", warn_attr)
-                row += 1
+                lines.append((" No TUN interface", warn_attr))
 
             # Local section
-            if row < content_y + traffic_h - 1:
-                safe_addstr(self.stdscr, row, lx, f" {BOX_H * 2} Local {BOX_H * 2}", label_attr | curses.A_BOLD)
-                row += 1
-                if row < content_y + traffic_h - 1:
-                    safe_addstr(self.stdscr, row, lx,
-                               " Intf  " + f"{ARROW_DOWN}".rjust(dcw) + " " +
-                               f"{ARROW_UP}".rjust(dcw) + " " +
-                               "Tx".rjust(dcw) + " Rx".rjust(dcw) + " " +
-                               "P↓".rjust(dcw) + " P↑".rjust(dcw), label_attr)
-                    row += 1
-                if local_ifaces:
-                    for iface in local_ifaces:
-                        if row >= content_y + traffic_h - 1:
-                            break
-                        name = (iface.get("name", "") or "?")[:name_w].ljust(name_w)
-                        td = snap["ifaces_traffic"].get(iface.get("name", ""), {})
-                        line = " " + name + " " + \
-                               format_rate(td.get("bytes_recv_rate", 0))[:dcw].rjust(dcw) + " " + \
-                               format_rate(td.get("bytes_sent_rate", 0))[:dcw].rjust(dcw) + " " + \
-                               format_bytes(td.get("session_bytes_sent", 0))[:dcw].rjust(dcw) + " " + \
-                               format_bytes(td.get("session_bytes_recv", 0))[:dcw].rjust(dcw) + " " + \
-                               format_pps(td.get("packets_recv_rate", 0))[:dcw].rjust(dcw) + " " + \
-                               format_pps(td.get("packets_sent_rate", 0))[:dcw].rjust(dcw)
-                        safe_addstr(self.stdscr, row, lx, line, value_attr)
-                        row += 1
-                else:
-                    safe_addstr(self.stdscr, row, lx, " No local interface", warn_attr)
-                    row += 1
+            lines.append((f" {BOX_H * 2} Local {BOX_H * 2}", label_attr | curses.A_BOLD))
+            lines.append((" Intf  " + f"{ARROW_DOWN}".rjust(dcw) + " " +
+                          f"{ARROW_UP}".rjust(dcw) + " " +
+                          "Tx".rjust(dcw) + " Rx".rjust(dcw) + " " +
+                          "P↓".rjust(dcw) + " P↑".rjust(dcw), label_attr))
+            if local_ifaces:
+                for iface in local_ifaces:
+                    name = (iface.get("name", "") or "?")[:name_w].ljust(name_w)
+                    td = snap["ifaces_traffic"].get(iface.get("name", ""), {})
+                    line = " " + name + " " + \
+                           format_rate(td.get("bytes_recv_rate", 0))[:dcw].rjust(dcw) + " " + \
+                           format_rate(td.get("bytes_sent_rate", 0))[:dcw].rjust(dcw) + " " + \
+                           format_bytes(td.get("session_bytes_sent", 0))[:dcw].rjust(dcw) + " " + \
+                           format_bytes(td.get("session_bytes_recv", 0))[:dcw].rjust(dcw) + " " + \
+                           format_pps(td.get("packets_recv_rate", 0))[:dcw].rjust(dcw) + " " + \
+                           format_pps(td.get("packets_sent_rate", 0))[:dcw].rjust(dcw)
+                    lines.append((line, value_attr))
+            else:
+                lines.append((" No local interface", warn_attr))
+
+            num_lines = len(lines)
+            avail_h = traffic_h - 3
+            max_scroll = max(0, num_lines - avail_h)
+            if self.traffic_scroll > max_scroll:
+                self.traffic_scroll = max_scroll
+
+            title = "Traffic Statistics"
+            if max_scroll > 0:
+                up_arrow = ARROW_UP if self.traffic_scroll > 0 else " "
+                dn_arrow = ARROW_DOWN if self.traffic_scroll < max_scroll else " "
+                title = f"Traffic Statistics [{up_arrow}{dn_arrow}]"
+
+            draw_double_box(self.stdscr, content_y, traffic_x, row1_h, traffic_w,
+                          title, border_attr, title_attr, win_bg_attr)
+
+            start_line = self.traffic_scroll
+            end_line = min(start_line + avail_h, num_lines)
+            for i in range(start_line, end_line):
+                text, attr = lines[i]
+                y = content_y + 2 + (i - start_line)
+                safe_addstr(self.stdscr, y, lx, text, attr)
 
         # ── Row 2: OpenVPN Info (left) + Local Network (right) ──
         if row2_y + row2_h <= content_end:
@@ -525,10 +564,10 @@ class UIManager:
                     row += 1
 
             # Local Network (right)
-            draw_double_box(self.stdscr, row2_y, col2_x, local_net_h, col_width,
-                          "Local Interfaces", border_attr, title_attr, win_bg_attr)
-            lx = col2_x + 2
             if has_single_local:
+                draw_double_box(self.stdscr, row2_y, col2_x, local_net_h, col_width,
+                              "Local Interfaces", border_attr, title_attr, win_bg_attr)
+                lx = col2_x + 2
                 iface = local_ifaces[0]
                 ip = iface.get("ipv4", "") or ""
                 mask = iface.get("netmask", "") or ""
@@ -546,30 +585,44 @@ class UIManager:
                                " Network:     ", net, label_attr, value_attr)
                 draw_label_value(self.stdscr, row2_y + 7, lx,
                                " Broadcast:   ", bcast, label_attr, value_attr)
-            elif local_ifaces:
-                row = row2_y + 2
-                safe_addstr(self.stdscr, row, lx,
-                          " Name   MAC               IPv4/Mask          S/D", label_attr | curses.A_BOLD)
-                row += 1
-                safe_addstr(self.stdscr, row, lx,
-                          " " + BOX_H * 49, label_attr)
-                row += 1
-                for iface in sorted(local_ifaces, key=lambda x: x.get("name", "")):
-                    if row >= row2_y + local_net_h - 1:
-                        break
-                    name = (iface.get("name", "") or "?")[:6].ljust(6)
-                    mac = (iface.get("mac", "") or "N/A")[:17].ljust(17)
-                    ipv4 = iface.get("ipv4", "") or ""
-                    mask = iface.get("netmask", "") or ""
-                    cidr = _mask_to_cidr(mask) if mask else 0
-                    ipv4mask = (f"{ipv4}/{cidr}" if ipv4 and mask else (ipv4 or "N/A"))[:18].ljust(18)
-                    dhcp_s = "DHCP" if iface.get("is_dhcp") else "S"
-                    safe_addstr(self.stdscr, row, lx,
-                              f" {name} {mac} {ipv4mask} {dhcp_s}", value_attr)
-                    row += 1
             else:
-                safe_addstr(self.stdscr, row2_y + 2, lx,
-                          " No interface detected", warn_attr)
+                local_lines = []
+                if local_ifaces:
+                    local_lines.append((" Name   MAC               IPv4/Mask          S/D", label_attr | curses.A_BOLD))
+                    local_lines.append((" " + BOX_H * 49, label_attr))
+                    for iface in sorted(local_ifaces, key=lambda x: x.get("name", "")):
+                        name = (iface.get("name", "") or "?")[:6].ljust(6)
+                        mac = (iface.get("mac", "") or "N/A")[:17].ljust(17)
+                        ipv4 = iface.get("ipv4", "") or ""
+                        mask = iface.get("netmask", "") or ""
+                        cidr = _mask_to_cidr(mask) if mask else 0
+                        ipv4mask = (f"{ipv4}/{cidr}" if ipv4 and mask else (ipv4 or "N/A"))[:18].ljust(18)
+                        dhcp_s = "DHCP" if iface.get("is_dhcp") else "S"
+                        local_lines.append((f" {name} {mac} {ipv4mask} {dhcp_s}", value_attr))
+                else:
+                    local_lines.append((" No interface detected", warn_attr))
+
+                num_local = len(local_lines)
+                avail_local = local_net_h - 3
+                max_scroll = max(0, num_local - avail_local)
+                if self.local_scroll > max_scroll:
+                    self.local_scroll = max_scroll
+
+                local_title = "Local Interfaces"
+                if max_scroll > 0:
+                    up_arrow = ARROW_UP if self.local_scroll > 0 else " "
+                    dn_arrow = ARROW_DOWN if self.local_scroll < max_scroll else " "
+                    local_title = f"Local Interfaces [{up_arrow}{dn_arrow}]"
+
+                draw_double_box(self.stdscr, row2_y, col2_x, local_net_h, col_width,
+                              local_title, border_attr, title_attr, win_bg_attr)
+
+                lx = col2_x + 2
+                start_line = self.local_scroll
+                end_line = min(start_line + avail_local, num_local)
+                for i in range(start_line, end_line):
+                    text, attr = local_lines[i]
+                    safe_addstr(self.stdscr, row2_y + 2 + (i - start_line), lx, text, attr)
 
         # ── Row 1: Ping (right) ──
         if self.cfg.network.ping_enabled and self.show_ping and content_y + row1_h <= content_end:
@@ -692,6 +745,8 @@ class UIManager:
             ("N",      "Toggle ping monitor"),
             ("R",      "Show routes table"),
             ("U",      "Refresh public IP now"),
+            ("A",      "Toggle public IP in top bar"),
+            ("T",      "Traceroute to IP/host"),
             ("P",      "Pause/resume collectors"),
             ("Q",      "Quit application"),
             ("ESC",    "Close popup"),
@@ -706,7 +761,6 @@ class UIManager:
             safe_addstr(self.stdscr, py + 2 + i, px + 16, desc, value_attr)
 
     def _draw_info_popup(self, h: int, w: int):
-        pw = min(55, w - 6)
         with self.state.lock:
             snap = _snapshot(self.state)
 
@@ -726,6 +780,10 @@ class UIManager:
             ("Config File:", ""),
             ("",             cfg_path or "(defaults)"),
         ]
+        # Calculate required width dynamically
+        max_val = max((len(v) for _, v in lines if v), default=0)
+        content_w = max(22 + max_val, 6 + max_val) + 4
+        pw = min(content_w, w - 6)
         ph = len(lines) + 4
         py, px = self._draw_popup_box(h, w, ph, pw, "Program Info")
         label_attr = get_attr(self.cfg, "text_label", bold=True)
@@ -780,10 +838,155 @@ class UIManager:
             attr = vpn_attr if r["is_vpn"] else norm_attr
             safe_addstr(self.stdscr, py + 3 + i, px + 2, line, attr)
 
+    # --- Traceroute popups ---
+
+    def _draw_traceroute_input_popup(self, h: int, w: int):
+        pw = min(60, w - 6)
+        ph = 7
+        py = (h - ph) // 2
+        px = (w - pw) // 2
+        border_attr = get_attr(self.cfg, "traceroute_border", bold=True)
+        title_attr = get_attr(self.cfg, "border_title", bold=True)
+        bg_attr = get_attr(self.cfg, "traceroute_bg")
+        label_attr = get_attr(self.cfg, "text_label", bold=True)
+        input_attr = get_attr(self.cfg, "traceroute_input", bold=True)
+        warn_attr = get_attr(self.cfg, "text_warning")
+
+        # Fill background
+        for row in range(py, py + ph):
+            safe_addstr(self.stdscr, row, px, " " * pw, bg_attr)
+        draw_double_box(self.stdscr, py, px, ph, pw, "Traceroute — Enter target", border_attr, title_attr)
+
+        safe_addstr(self.stdscr, py + 2, px + 3, "  Target IP/host:", label_attr)
+
+        # Fixed-width input field
+        fw = self.cfg.display.traceroute_input_width
+        fc = self.cfg.display.traceroute_input_char or " "
+        buf = self.traceroute_buffer or ""
+        filled = (fc * fw)
+        ix = px + (pw - fw) // 2
+        safe_addstr(self.stdscr, py + 4, ix, filled, input_attr)
+        if buf:
+            safe_addstr(self.stdscr, py + 4, ix, buf[:fw], input_attr)
+
+        safe_addstr(self.stdscr, py + 5, px + 3, "  Enter=Start  ESC=Cancel", warn_attr)
+
+    def _draw_traceroute_results_popup(self, h: int, w: int):
+        results = self.traceroute_results or []
+        num_hops = len(results)
+        vis_rows = max(3, h - 8)
+        ph = min(num_hops + 4, vis_rows + 4) if num_hops else 6
+        ph = max(6, ph)
+        pw = min(50, w - 6)
+        py = (h - ph) // 2
+        px = (w - pw) // 2
+        border_attr = get_attr(self.cfg, "traceroute_border", bold=True)
+        title_attr = get_attr(self.cfg, "border_title", bold=True)
+        bg_attr = get_attr(self.cfg, "traceroute_bg")
+        value_attr = get_attr(self.cfg, "text_value")
+        warn_attr = get_attr(self.cfg, "text_warning")
+
+        # Fill background
+        for row in range(py, py + ph):
+            safe_addstr(self.stdscr, row, px, " " * pw, bg_attr)
+
+        content_h = ph - 4  # rows available for hop lines
+        scrollable = num_hops > content_h
+        if self.traceroute_scroll < 0:
+            self.traceroute_scroll = 0
+        if self.traceroute_scroll > max(0, num_hops - content_h):
+            self.traceroute_scroll = max(0, num_hops - content_h)
+
+        title = "Traceroute"
+        if self.traceroute_state == "running":
+            title += " (running...)"
+        if scrollable:
+            arrow_up = ARROW_UP if self.traceroute_scroll > 0 else " "
+            arrow_dn = ARROW_DOWN if self.traceroute_scroll < num_hops - content_h else " "
+            title += f" {arrow_up}{arrow_dn}"
+        draw_double_box(self.stdscr, py, px, ph, pw, title, border_attr, title_attr)
+
+        if not results:
+            safe_addstr(self.stdscr, py + 2, px + 3, "  No results yet...", warn_attr)
+            return
+
+        start = self.traceroute_scroll
+        for i in range(min(content_h, num_hops - start)):
+            hop = results[start + i]
+            hop_num = start + i + 1
+            if hop:
+                safe_addstr(self.stdscr, py + 2 + i, px + 3, f"  {hop_num:2d}  {hop}", value_attr)
+            else:
+                safe_addstr(self.stdscr, py + 2 + i, px + 3, f"  {hop_num:2d}  *", warn_attr)
+
+        if self.traceroute_state == "done":
+            safe_addstr(self.stdscr, py + ph - 2, px + 3, "  ESC close", warn_attr)
+
+    def _run_traceroute(self, target: str):
+        """Run traceroute in a background thread, updating results progressively."""
+        results: List[Optional[str]] = []
+        self.traceroute_results = results
+        def progress(ttl, hop):
+            results.append(hop)
+        custom_traceroute(target, max_hops=30, timeout=2.0, progress_callback=progress)
+        if not results:
+            self.traceroute_results = None
+
     # --- Input handling ---
 
     def handle_key(self, key: int) -> bool:
         """Handle keypress. Returns False if should quit."""
+        # Traceroute input mode — capture text
+        if self.traceroute_state == "input":
+            if key == 27:  # ESC → cancel
+                self.traceroute_state = "idle"
+                self.traceroute_buffer = ""
+                return True
+            if key in (ord("\n"), ord("\r"), curses.KEY_ENTER):  # Enter → start
+                target = self.traceroute_buffer.strip()
+                self.traceroute_buffer = ""
+                if target:
+                    self.traceroute_state = "running"
+                    self.traceroute_results = None
+                    self.traceroute_thread = threading.Thread(
+                        target=self._run_traceroute, args=(target,), daemon=True
+                    )
+                    self.traceroute_thread.start()
+                else:
+                    self.traceroute_state = "idle"
+                return True
+            if key in (curses.KEY_BACKSPACE, 127, 8):  # Backspace
+                self.traceroute_buffer = self.traceroute_buffer[:-1]
+                return True
+            if 32 <= key < 127:  # Printable ASCII
+                self.traceroute_buffer += chr(key)
+                return True
+            return True
+
+        # Traceroute results — scrolling + close
+        if self.traceroute_state in ("running", "done"):
+            if key == 27:
+                self.traceroute_state = "idle"
+                self.traceroute_results = None
+                self.traceroute_thread = None
+                self.traceroute_scroll = 0
+                return True
+            n = len(self.traceroute_results) if self.traceroute_results else 0
+            content_h = max(3, self.stdscr.getmaxyx()[0] - 12)
+            if key == curses.KEY_UP:
+                self.traceroute_scroll = max(0, self.traceroute_scroll - 1)
+                return True
+            if key == curses.KEY_DOWN:
+                self.traceroute_scroll = max(0, min(n - content_h, self.traceroute_scroll + 1))
+                return True
+            if key == curses.KEY_PPAGE:
+                self.traceroute_scroll = max(0, self.traceroute_scroll - content_h)
+                return True
+            if key == curses.KEY_NPAGE:
+                self.traceroute_scroll = max(0, min(n - content_h, self.traceroute_scroll + content_h))
+                return True
+            return True
+
         k = self.cfg.keys
         ch = chr(key) if 0 < key < 256 else ""
         ch_lower = ch.lower()
@@ -828,11 +1031,42 @@ class UIManager:
                 self.show_info = False
             return True
 
+        if ch_lower == k.toggle_ip:
+            self.show_ip = not self.show_ip
+            if self.show_ip:
+                with self.state.lock:
+                    self.state.last_ip_check = 0
+                    self.state.refresh_token += 1
+            return True
+
         if ch_lower == k.refresh_ip:
             with self.state.lock:
                 self.state.public_ip = "refreshing..."
                 self.state.last_ip_check = 0
                 self.state.refresh_token += 1
+            return True
+
+        if ch_lower == k.traceroute:
+            self.traceroute_state = "input"
+            self.traceroute_buffer = ""
+            return True
+
+        # Panel scrolling (when no popup/traceroute is active)
+        if key == curses.KEY_UP:
+            self.traffic_scroll = max(0, self.traffic_scroll - 1)
+            self.local_scroll = max(0, self.local_scroll - 1)
+            return True
+        if key == curses.KEY_DOWN:
+            self.traffic_scroll += 1
+            self.local_scroll += 1
+            return True
+        if key == curses.KEY_PPAGE:
+            self.traffic_scroll = max(0, self.traffic_scroll - 5)
+            self.local_scroll = max(0, self.local_scroll - 5)
+            return True
+        if key == curses.KEY_NPAGE:
+            self.traffic_scroll += 5
+            self.local_scroll += 5
             return True
 
         return True

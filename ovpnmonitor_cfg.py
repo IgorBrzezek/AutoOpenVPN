@@ -29,13 +29,83 @@ COLOR_MAP = {
 }
 
 
+# Encode/decode hex RGB colors as negative placeholders (resolved in init_colors)
+def _encode_hex(r: int, g: int, b: int) -> int:
+    return -(r * 1000000 + g * 1000 + b + 1)
+
+# Add orange as hex-encoded custom color (resolved in init_colors)
+COLOR_MAP["orange"] = _encode_hex(255, 119, 0)
+
+
+def _decode_hex(val: int) -> Optional[Tuple[int, int, int]]:
+    if val >= 0:
+        return None
+    enc = -val - 1
+    return (enc // 1000000, (enc % 1000000) // 1000, enc % 1000)
+
+def _find_nearest_color(r: int, g: int, b: int) -> int:
+    """Match RGB to nearest standard curses color (fallback)."""
+    standards = [
+        (curses.COLOR_BLACK, 0, 0, 0),
+        (curses.COLOR_RED, 255, 0, 0),
+        (curses.COLOR_GREEN, 0, 255, 0),
+        (curses.COLOR_YELLOW, 255, 255, 0),
+        (curses.COLOR_BLUE, 0, 0, 255),
+        (curses.COLOR_MAGENTA, 255, 0, 255),
+        (curses.COLOR_CYAN, 0, 255, 255),
+        (curses.COLOR_WHITE, 255, 255, 255),
+    ]
+    # Orange-ish hues: prefer YELLOW over RED for visual appeal
+    if r > 200 and g > 50 and g < 200 and b < 50:
+        return curses.COLOR_YELLOW
+    best = curses.COLOR_WHITE
+    best_d = float("inf")
+    for cid, cr, cg, cb in standards:
+        d = (r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2
+        if d < best_d:
+            best_d = d
+            best = cid
+    return best
+
+def _resolve_color(val: int) -> int:
+    """Resolve possibly-encoded color to a curses color ID."""
+    rgb = _decode_hex(val)
+    if rgb is None:
+        return val
+    r, g, b = rgb
+    if curses.can_change_color():
+        global _custom_color_counter
+        color_id = _custom_color_counter
+        _custom_color_counter += 1
+        try:
+            curses.init_color(color_id, r * 1000 // 255, g * 1000 // 255, b * 1000 // 255)
+            return color_id
+        except curses.error:
+            pass
+    return _find_nearest_color(r, g, b)
+
+def _parse_single_color(name: str) -> int:
+    """Parse a single color name or hex code."""
+    if name in COLOR_MAP:
+        return COLOR_MAP[name]
+    if name.startswith("#") and len(name) == 7:
+        try:
+            r = int(name[1:3], 16)
+            g = int(name[3:5], 16)
+            b = int(name[5:7], 16)
+            return _encode_hex(r, g, b)
+        except ValueError:
+            pass
+    return curses.COLOR_WHITE
+
 def parse_color_pair(value: str) -> Tuple[int, int]:
-    """Parse 'foreground,background' string into curses color constants."""
+    """Parse 'foreground,background' string into curses color constants.
+    Supports named colors and hex RGB (#RRGGBB)."""
     parts = [p.strip().lower() for p in value.split(",")]
     if len(parts) != 2:
         return (curses.COLOR_WHITE, curses.COLOR_BLACK)
-    fg = COLOR_MAP.get(parts[0], curses.COLOR_WHITE)
-    bg = COLOR_MAP.get(parts[1], curses.COLOR_BLACK)
+    fg = _parse_single_color(parts[0])
+    bg = _parse_single_color(parts[1])
     return (fg, bg)
 
 
@@ -61,6 +131,10 @@ class ColorConfig:
     highlight: Tuple[int, int] = (curses.COLOR_BLACK, curses.COLOR_CYAN)
     popup_border: Tuple[int, int] = (curses.COLOR_YELLOW, curses.COLOR_BLACK)
     popup_bg: Tuple[int, int] = (curses.COLOR_WHITE, curses.COLOR_BLACK)
+    public_ip_bar: Tuple[int, int] = (curses.COLOR_WHITE, curses.COLOR_BLUE)
+    traceroute_border: Tuple[int, int] = (curses.COLOR_YELLOW, curses.COLOR_BLACK)
+    traceroute_bg: Tuple[int, int] = (curses.COLOR_WHITE, curses.COLOR_BLACK)
+    traceroute_input: Tuple[int, int] = (curses.COLOR_BLACK, curses.COLOR_YELLOW)
     window_bg: int = curses.COLOR_BLACK
     ping_ok: Tuple[int, int] = (curses.COLOR_GREEN, curses.COLOR_BLACK)
     ping_warn: Tuple[int, int] = (curses.COLOR_YELLOW, curses.COLOR_BLACK)
@@ -81,6 +155,8 @@ class KeyConfig:
     toggle_pause: str = "p"
     toggle_ping: str = "n"
     show_routes: str = "r"
+    toggle_ip: str = "a"
+    traceroute: str = "t"
 
 
 @dataclass
@@ -93,7 +169,7 @@ class PingTarget:
 @dataclass
 class NetworkConfig:
     """Network data collection settings."""
-    ip_check_url: str = "https://api.ipify.org"
+    ip_check_url: str = "https://checkip.amazonaws.com"
     ip_check_interval: float = 30.0
     ping_enabled: bool = True
     ping_targets: List[PingTarget] = field(default_factory=lambda: [
@@ -117,13 +193,16 @@ class DisplayConfig:
     """Window display settings."""
     ping_bar_width: int = 19
     border_style: str = "double"
+    public_ip_char: str = "░"
+    traceroute_input_char: str = " "
+    traceroute_input_width: int = 17
 
 
 @dataclass
 class Config:
     """Complete application configuration."""
     app_name: str = "OVPNMonitor"
-    version: str = "0.0.2a"
+    version: str = "0.0.3"
     author: str = "Igor Brzezek"
     refresh_interval_ms: int = 1000
     refresh_interval_s: int = 1
@@ -133,6 +212,7 @@ class Config:
     log_file: str = ""
     pathping_target: str = ""
     config_path: str = ""
+    show_public_ip: bool = False
     warnings: List[str] = field(default_factory=list)
 
     colors: ColorConfig = field(default_factory=ColorConfig)
@@ -150,6 +230,7 @@ class Config:
 
 # Global pair counter
 _pair_counter = 1
+_custom_color_counter = 100
 
 
 def register_color_pair(fg: int, bg: int) -> int:
@@ -168,14 +249,16 @@ def init_colors(cfg: Config) -> None:
     """Initialize all curses color pairs from config.
     Must be called after curses.start_color().
     """
-    global _pair_counter
+    global _pair_counter, _custom_color_counter
     _pair_counter = 1
+    _custom_color_counter = 100
 
     cc = cfg.colors
     pairs = {}
 
     # Register background color pair first
-    pairs["background"] = register_color_pair(curses.COLOR_WHITE, cc.background)
+    bg = _resolve_color(cc.background)
+    pairs["background"] = register_color_pair(curses.COLOR_WHITE, bg)
 
     color_fields = [
         "status_bar_top", "status_bar_bottom", "border", "border_title",
@@ -184,13 +267,18 @@ def init_colors(cfg: Config) -> None:
         "popup_border", "popup_bg",
         "ping_ok", "ping_warn", "ping_high", "ping_bad",
         "ping_worse", "ping_critical", "ping_dead",
+        "public_ip_bar",
+        "traceroute_border", "traceroute_bg", "traceroute_input",
     ]
 
     for name in color_fields:
         fg, bg = getattr(cc, name)
+        fg = _resolve_color(fg)
+        bg = _resolve_color(bg)
         pairs[name] = register_color_pair(fg, bg)
 
-    pairs["window_bg"] = register_color_pair(curses.COLOR_WHITE, cc.window_bg)
+    wbg = _resolve_color(cc.window_bg)
+    pairs["window_bg"] = register_color_pair(curses.COLOR_WHITE, wbg)
 
     cfg.color_pairs = pairs
 
@@ -250,23 +338,25 @@ def load_config(explicit_path: Optional[str] = None) -> Config:
             cfg.background_char = " "
         cfg.vpn_interface = g.get("vpn_interface", cfg.vpn_interface)
         cfg.log_file = g.get("log_file", cfg.log_file)
+        cfg.show_public_ip = g.getboolean("show_public_ip", cfg.show_public_ip)
 
     # --- [colors] ---
     if cp.has_section("colors"):
         c = cp["colors"]
         cc = cfg.colors
         if "background" in c:
-            cc.background = COLOR_MAP.get(c["background"].strip().lower(), curses.COLOR_BLACK)
+            cc.background = _parse_single_color(c["background"].strip().lower())
         for field_name in [
             "status_bar_top", "status_bar_bottom", "border", "border_title",
             "text_normal", "text_label", "text_value", "text_warning",
             "text_error", "online", "offline", "highlight",
-            "popup_border", "popup_bg",
+            "popup_border", "popup_bg", "public_ip_bar",
+            "traceroute_border", "traceroute_bg", "traceroute_input",
         ]:
             if field_name in c:
                 setattr(cc, field_name, parse_color_pair(c[field_name]))
         if "window_bgcolor" in c:
-            cc.window_bg = COLOR_MAP.get(c["window_bgcolor"].strip().lower(), curses.COLOR_BLACK)
+            cc.window_bg = _parse_single_color(c["window_bgcolor"].strip().lower())
 
     # --- [network] ---
     if cp.has_section("network"):
@@ -319,6 +409,8 @@ def load_config(explicit_path: Optional[str] = None) -> Config:
         kc.toggle_pause = k.get("toggle_pause", kc.toggle_pause)
         kc.toggle_ping = k.get("toggle_ping", kc.toggle_ping)
         kc.show_routes = k.get("show_routes", kc.show_routes)
+        kc.toggle_ip = k.get("toggle_ip", kc.toggle_ip)
+        kc.traceroute = k.get("traceroute", kc.traceroute)
 
     # --- [display] ---
     if cp.has_section("display"):
@@ -326,6 +418,11 @@ def load_config(explicit_path: Optional[str] = None) -> Config:
         dc = cfg.display
         dc.ping_bar_width = d.getint("ping_bar_width", dc.ping_bar_width)
         dc.border_style = d.get("border_style", dc.border_style).strip().lower()
+        dc.public_ip_char = d.get("public_ip_char", dc.public_ip_char)
+        _tmp = d.get("traceroute_input_char", None)
+        if _tmp is not None:
+            dc.traceroute_input_char = _tmp if _tmp else " "
+        dc.traceroute_input_width = max(10, d.getint("traceroute_input_width", dc.traceroute_input_width))
 
     if dc.border_style not in ("single", "double"):
         dc.border_style = "double"

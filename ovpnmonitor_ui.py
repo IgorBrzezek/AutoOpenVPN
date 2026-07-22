@@ -499,9 +499,10 @@ class UIManager:
                            " Use --tun or start VPN", warn_attr)
             elif vpn_has_single:
                 iface = vpn_ifaces[0]
+                public_ip_display = snap["public_ip"] if self.show_ip else "--HIDDEN--"
                 ip_attr = value_attr if snap["public_ip"] not in ("detecting...", "") else warn_attr
                 draw_label_value(self.stdscr, row2_y + 2, lx,
-                               " Public IP:    ", snap["public_ip"], label_attr, ip_attr)
+                               " Public IP:    ", public_ip_display, label_attr, ip_attr)
                 draw_label_value(self.stdscr, row2_y + 3, lx,
                                " VPN Gateway:  ", iface.get("gateway", "") or snap["gateway_ip"] or "N/A", label_attr, value_attr)
                 draw_label_value(self.stdscr, row2_y + 4, lx,
@@ -541,9 +542,10 @@ class UIManager:
                     if cfg_row < row2_y + conn_h - 1:
                         safe_addstr(self.stdscr, cfg_row, lx, cfg_val[:content_w], value_attr)
             else:
+                public_ip_display = snap["public_ip"] if self.show_ip else "--HIDDEN--"
                 ip_attr = value_attr if snap["public_ip"] not in ("detecting...", "") else warn_attr
                 draw_label_value(self.stdscr, row2_y + 2, lx,
-                               " Public IP:    ", snap["public_ip"], label_attr, ip_attr)
+                               " Public IP:    ", public_ip_display, label_attr, ip_attr)
                 draw_label_value(self.stdscr, row2_y + 3, lx,
                                " Server:       ", snap["vpn_server"] or "N/A", label_attr, value_attr)
                 row = row2_y + 4

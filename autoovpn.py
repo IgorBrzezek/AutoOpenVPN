@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Download VPNBook OpenVPN configs with dynamic website scanning.
+"""Download VPNBook OpenVPN configs with dynamic website scanning + run OpenVPN.
 
 Examples:
   autoovpn --scan                     # scan & display only
@@ -16,7 +16,7 @@ Examples:
    autoovpn --run us16_tcp443_443.ovpn # run a local .ovpn config file
    autoovpn --run file.ovpn --user vpnbook --pwd secret # with custom credentials
    autoovpn --run file.ovpn --datafile myauth.txt   # with existing auth file
-   autoovpn --run us16,tcp443 --addroute 192.168.53.0/24,10.10.10.1  # add route after connect
+   autoovpn --run us16,tcp443 --addroute 192.168.53.0/24,10.10.10.1 --addroute 10.0.0.0/8,10.8.0.1  # add routes after connect
 """
 
 import argparse
@@ -76,7 +76,7 @@ def color_header(text):
 
 
 AUTHOR = "Igor Brzezek"
-VERSION = "0.0.2a"
+VERSION = "0.0.3"
 GITHUB = "https://github.com/IgorBrzezek"
 
 # ---------------------------------------------------------------------------
@@ -523,6 +523,10 @@ def show_connection_info(tun_device=None):
 def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None, addroute=None, showip=False):
     cmd = ["sudo", "openvpn", "--client", "--config", config_path]
     print(color_status(f"Running: {' '.join(cmd)}", '*'))
+    if addroute:
+        print(color_status("Routes to add after connection:", '*'))
+        for i, (net, gw) in enumerate(addroute, 1):
+            print(f"    {i}. {net} via {gw}")
     print()
     process = None
     try:
@@ -534,7 +538,7 @@ def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None,
               file=sys.stderr)
         return
 
-    route_added = False
+    added_routes = []
     connected_event = threading.Event()
     tun_dev_info = [None]
     ip_shown = [False]
@@ -560,9 +564,11 @@ def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None,
     if addroute:
         connected = connected_event.wait(timeout=15)
         if connected:
-            route_added = _add_route(*addroute)
+            for route in addroute:
+                if _add_route(*route):
+                    added_routes.append(route)
         else:
-            print(color_status("OpenVPN not connected after 15s, route not added.", '!'), file=sys.stderr)
+            print(color_status("OpenVPN not connected after 15s, routes not added.", '!'), file=sys.stderr)
 
     # Show connection info as soon as VPN is connected (tunnel is active)
     if showip:
@@ -626,8 +632,8 @@ def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None,
             _kill_pg_hard()
             process.wait()
     finally:
-        if route_added:
-            _del_route(*addroute)
+        for route in reversed(added_routes):
+            _del_route(*route)
         if temp_auth_file and os.path.exists(temp_auth_file.name):
             os.unlink(temp_auth_file.name)
             print(color_status(f"Temp auth file {temp_auth_file.name} removed.", '*'))
@@ -639,7 +645,7 @@ def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None,
 
 def main():
     parser = argparse.ArgumentParser(
-        description=f"Download VPNBook OpenVPN configs.  "
+        description=f"Download VPNBook OpenVPN configs. Run OpenVPN then.  "
                     f"Author: {AUTHOR}  |  Version: {VERSION}  |  {GITHUB}")
     parser.add_argument("--scan", action="store_true",
                         help="Only scan and display servers, protocols, credentials")
@@ -680,9 +686,11 @@ def main():
                              "overrides auth-user-pass in .ovpn, "
                              "exclusive with --user/--pwd")
     parser.add_argument("--addroute", metavar="NET/MASK,GATEWAY", type=parse_addroute,
+                        action="append", default=None,
                         help="Add route NET/MASK via GATEWAY after VPN connects; "
                              "route is removed when VPN disconnects "
-                             "(e.g. 192.168.53.0/24,10.10.10.1)")
+                             "(e.g. 192.168.53.0/24,10.10.10.1); "
+                             "can be specified multiple times")
     parser.add_argument("--showip", action="store_true",
                         help="After connection, show public IP and tunnel addresses")
     parser.add_argument("--color", action="store_true",

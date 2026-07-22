@@ -1,6 +1,6 @@
 # AutoOVPN — VPNBook OpenVPN Config Downloader & Runner
 
-**Version:** 0.0.2a  
+**Version:** 0.0.3  
 **Author:** Igor Brzezek  
 **GitHub:** [https://github.com/IgorBrzezek](https://github.com/IgorBrzezek)  
 
@@ -133,8 +133,8 @@ python autoovpn.py --run file.ovpn --user vpnbook --pwd secret
 # Run with an existing auth file
 python autoovpn.py --run file.ovpn --datafile myauth.txt
 
-# Run and add a route after the VPN connects
-python autoovpn.py --run us16,tcp443 --addroute 192.168.53.0/24,10.10.10.1
+# Run and add routes after the VPN connects
+python autoovpn.py --run us16,tcp443 --addroute 192.168.53.0/24,10.10.10.1 --addroute 10.0.0.0/8,10.8.0.1
 
 # Run with a 1-hour timeout
 python autoovpn.py --run us16,tcp443 --timeout 01:00:00
@@ -345,23 +345,29 @@ If the `.ovpn` config does not already contain an `auth-user-pass` directive, on
 
 ### `--addroute`
 
-Add a network route through the VPN tunnel after the connection is established. The route is automatically removed when OpenVPN disconnects.
+Add one or more network routes through the VPN tunnel after the connection is established. Routes are automatically removed when OpenVPN disconnects. Specify the option multiple times for multiple routes.
 
 Format: `NETWORK/MASK,GATEWAY`
 
 ```
+# Single route
 python autoovpn.py --run us16,tcp443 --addroute 192.168.53.0/24,10.10.10.1
+
+# Multiple routes
+python autoovpn.py --run us16,tcp443 \
+  --addroute 192.168.53.0/24,10.10.10.1 \
+  --addroute 10.0.0.0/8,10.8.0.1
 ```
 
-The program waits up to 15 seconds for the "Initialization Sequence Completed" message from OpenVPN, then runs:
+The program waits up to 15 seconds for the "Initialization Sequence Completed" message from OpenVPN, then adds each route:
 ```
 sudo ip route add 192.168.53.0/24 via 10.10.10.1
+sudo ip route add 10.0.0.0/8 via 10.8.0.1
 ```
 
-On disconnect (timeout, user interrupt, or OpenVPN exit), it runs:
-```
-sudo ip route del 192.168.53.0/24 via 10.10.10.1
-```
+On disconnect (timeout, user interrupt, or OpenVPN exit), routes are cleaned up in reverse order.
+
+When `--addroute` is used, the routes are displayed in the summary before OpenVPN starts:
 
 ---
 
@@ -501,6 +507,11 @@ python autoovpn.py --run us16,tcp443 --addroute 10.0.0.0/8,10.8.0.1
 
 # Add a route to a specific subnet
 python autoovpn.py --run us16,tcp443 --addroute 192.168.53.0/24,10.10.10.1
+
+# Add multiple routes (repeat --addroute)
+python autoovpn.py --run us16,tcp443 \
+  --addroute 192.168.53.0/24,10.10.10.1 \
+  --addroute 10.0.0.0/8,10.8.0.1
 ```
 
 ### Custom TUN Device Number
@@ -573,7 +584,7 @@ General application settings.
 | Key                 | Default        | Description                                          |
 |---------------------|----------------|------------------------------------------------------|
 | `app_name`          | OVPNMonitor    | Application name displayed in the top status bar     |
-| `version`           | 0.0.2a          | Version string                                       |
+| `version`           | 0.0.3          | Version string                                       |
 | `author`            | Igor Brzezek   | Author name                                          |
 | `background_char`   | ▒              | Background fill character (e.g. `░`, `▒`, `▓`, `·`, `°`, `#`). Leave empty for solid background. |
 | `refresh_interval_s`| 1              | Screen refresh interval in seconds (1–5)             |

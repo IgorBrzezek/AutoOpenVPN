@@ -157,6 +157,7 @@ class KeyConfig:
     show_routes: str = "r"
     toggle_ip: str = "a"
     traceroute: str = "t"
+    show_dns: str = "d"
 
 
 @dataclass
@@ -193,7 +194,7 @@ class DisplayConfig:
     """Window display settings."""
     ping_bar_width: int = 19
     border_style: str = "double"
-    public_ip_char: str = "░"
+    public_ip_char: str = "|"
     traceroute_input_char: str = " "
     traceroute_input_width: int = 17
 
@@ -202,7 +203,7 @@ class DisplayConfig:
 class Config:
     """Complete application configuration."""
     app_name: str = "OVPNMonitor"
-    version: str = "0.0.3"
+    version: str = "0.0.4"
     author: str = "Igor Brzezek"
     refresh_interval_ms: int = 1000
     refresh_interval_s: int = 1

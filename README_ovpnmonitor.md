@@ -61,7 +61,7 @@ Print the application name, version number and author, then exit.
 
 ```bash
 python ovpnmonitor.py --version
-# OVPNMonitor v0.0.3 by Igor Brzezek
+# OVPNMonitor v0.0.4 by Igor Brzezek
 ```
 
 ### `--pathping IP`
@@ -106,7 +106,7 @@ The screen is divided into four areas:
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  OVPNMonitor v0.0.3              ONLINE               PAUSED │  ← Top bar
+│  OVPNMonitor v0.0.4              ONLINE               PAUSED │  ← Top bar
 ├──────────────────────┬───────────────────────────────────────┤
 │  Traffic Statistics  │  Ping Monitor                         │  ← Row 1
 │  ── TUN ──           │  gateway   12 ms ████████████▒▒▒ OK   │
@@ -120,7 +120,7 @@ The screen is divided into four areas:
 │  VPN Gateway: 10.8..│  MAC:        08:00:27:...             │
 │  ...                 │  IPv4/Mask:  10.0.2.15/24 [24]       │
 ├──────────────────────┴───────────────────────────────────────┤
-│  hostname      H:Help I:Info N:Ping R:Routes A:IP T:Trace P:Pause Q:Quit │  ← Bottom bar
+│  hostname      H:Help I:Info N:Ping R:Routes A:IP D:DNS T:Trace P:Pause Q:Quit │  ← Bottom bar
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -132,7 +132,7 @@ The screen is divided into four areas:
 
 ### Bottom Status Bar
 - **Left**: Hostname of the machine.
-- **Center**: Available keyboard shortcuts (H,I,N,R,A,T,P,Q).
+- **Center**: Available keyboard shortcuts (H,I,N,R,A,D,T,P,Q).
 - **Right**: Current date and time.
 
 ### Row 1 — Traffic Statistics + Ping Monitor
@@ -255,7 +255,7 @@ If none is found, all defaults are used.
 | Key                 | Default     | Description                                    |
 |---------------------|-------------|------------------------------------------------|
 | `app_name`          | OVPNMonitor | Name shown in the top status bar               |
-| `version`           | 0.0.3        | Version string                                 |
+| `version`           | 0.0.4        | Version string                                 |
 | `author`            | Igor Brzezek| Author name                                    |
 | `background_char`   | (space)     | Fill character for the screen background       |
 | `refresh_interval_s`| 1           | UI refresh rate in seconds (1-5)               |
@@ -288,6 +288,7 @@ pathping_target = 10.8.0.1
 | `show_routes`  | r       | Show routes table popup         |
 | `toggle_ip`    | a       | Toggle public IP in top bar     |
 | `traceroute`   | t       | Open traceroute input dialog     |
+| `show_dns`     | d       | Show DNS servers popup           |
 
 **Example:**
 ```ini

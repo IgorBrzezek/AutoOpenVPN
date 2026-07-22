@@ -66,7 +66,7 @@ python autoovpn.py --run us16,tcp443 --datafile /tmp/vpn.auth
 ### autoovpn.py
 
 **File:** `autoovpn.py`  
-**Version:** 0.0.3  
+**Version:** 0.0.4  
 **Role:** The main workhorse — scans VPNBook, downloads configs, runs OpenVPN.
 
 - Dynamically scrapes the VPNBook website by parsing React Server Component (RSC) payloads embedded in the page HTML.
@@ -83,6 +83,8 @@ python autoovpn.py --get ca --proto tcp            # Canadian TCP only
 python autoovpn.py --run us16,tcp443               # Download & connect
 python autoovpn.py --run us16.ovpn --timeout 02:00:00  # Run with timeout
 python autoovpn.py --run us16,tcp443 --addroute 192.168.53.0/24,10.10.10.1 --addroute 10.0.0.0/8,10.8.0.1
+python autoovpn.py -d --run us16,tcp443               # Daemonize (background)
+python autoovpn.py --kill                              # Kill OpenVPN + cleanup
 ```
 
 For full documentation, see [README_openvpn.md](README_openvpn.md).
@@ -92,7 +94,7 @@ For full documentation, see [README_openvpn.md](README_openvpn.md).
 ### ovpnmonitor.py
 
 **File:** `ovpnmonitor.py` + `ovpnmonitor_cfg.py` + `ovpnmonitor_data.py` + `ovpnmonitor_ui.py`  
-**Version:** 0.0.3  
+**Version:** 0.0.4  
 **Role:** Real-time terminal dashboard for monitoring the OpenVPN connection.
 
 A retro DOS/iptraf-style TUI built with Python `curses`. It runs in a terminal and displays:
@@ -115,7 +117,7 @@ python ovpnmonitor.py --noping                     # Disable ping monitoring
 python ovpnmonitor.py --pathping 10.8.0.1           # Enable path tracing
 ```
 
-**Keyboard shortcuts:** `Q` quit, `H` help, `I` info, `N` toggle ping, `R` routes, `U` refresh IP, `P` pause.
+**Keyboard shortcuts:** `Q` quit, `H` help, `I` info, `N` toggle ping, `R` routes, `D` DNS, `U` refresh IP, `P` pause.
 
 ---
 

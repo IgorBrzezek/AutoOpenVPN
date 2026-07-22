@@ -7,6 +7,7 @@ top/bottom status bars, and popup overlays.
 
 import curses
 import os
+import re
 import socket
 import struct
 import threading
@@ -100,7 +101,7 @@ def format_uptime(seconds: float) -> str:
 
 def format_datetime() -> str:
     t = time.localtime()
-    return time.strftime("%d:%m:%Y %H:%M", t)
+    return time.strftime("%d-%m-%Y %H:%M", t)
 
 
 def format_packets(n: int) -> str:
@@ -214,6 +215,7 @@ class UIManager:
         self.show_ip = cfg.show_public_ip
         self.show_warning = bool(self.cfg.warnings)
         self.show_routes = False
+        self.show_dns = False
         self._routes_cache = []
         self.hostname = socket.gethostname()
 
@@ -255,6 +257,8 @@ class UIManager:
             self._draw_warning_popup(h, w)
         if self.show_routes:
             self._draw_routes_popup(h, w)
+        if self.show_dns:
+            self._draw_dns_popup(h, w)
 
         if self.traceroute_state == "input":
             self._draw_traceroute_input_popup(h, w)
@@ -300,9 +304,9 @@ class UIManager:
             ip_attr = get_attr(self.cfg, "public_ip_bar", bold=True)
             ip_str = f" {self.cfg.display.public_ip_char} {public_ip} "
             if paused:
-                ip_x = w - len(ip_str) - 10
+                ip_x = w - len(ip_str) - 11
             else:
-                ip_x = w - len(ip_str)
+                ip_x = w - len(ip_str) - 1
             if ip_x > 0:
                 safe_addstr(self.stdscr, 0, ip_x, ip_str, ip_attr)
 
@@ -320,7 +324,7 @@ class UIManager:
         safe_addstr(self.stdscr, y, 1, self.hostname, attr)
 
         # Center: key hints
-        hints = "H:Help  I:Info  N:Ping  R:Routes  A:IP  T:Trace  P:Pause  Q:Quit"
+        hints = "H:Help  I:Info  N:Ping  R:Routes  A:IP  D:DNS  T:Trace  P:Pause  Q:Quit"
         hx = (w - len(hints)) // 2
         safe_addstr(self.stdscr, y, hx, hints, attr)
 
@@ -840,6 +844,50 @@ class UIManager:
             attr = vpn_attr if r["is_vpn"] else norm_attr
             safe_addstr(self.stdscr, py + 3 + i, px + 2, line, attr)
 
+    def _draw_dns_popup(self, h: int, w: int):
+        ipv4 = []
+        ipv6 = []
+        try:
+            with open("/etc/resolv.conf") as f:
+                for line in f:
+                    m = re.match(r'^\s*nameserver\s+(\S+)', line)
+                    if m:
+                        addr = m.group(1)
+                        if ':' in addr:
+                            ipv6.append(addr)
+                        else:
+                            ipv4.append(addr)
+        except OSError:
+            pass
+
+        lines = []
+        if ipv4:
+            lines.append(("IPv4:", ""))
+            for a in ipv4:
+                lines.append(("", f"  {a}"))
+        if ipv6:
+            if ipv4:
+                lines.append(("", ""))
+            lines.append(("IPv6:", ""))
+            for a in ipv6:
+                lines.append(("", f"  {a}"))
+        if not lines:
+            lines.append(("", "No DNS servers found"))
+
+        max_val = max((len(v) for _, v in lines if v), default=0)
+        content_w = max(18 + max_val, 4 + max_val) + 4
+        pw = min(content_w, w - 6)
+        ph = len(lines) + 4
+        py, px = self._draw_popup_box(h, w, ph, pw, "DNS Servers")
+        label_attr = get_attr(self.cfg, "text_label", bold=True)
+        value_attr = get_attr(self.cfg, "text_value")
+
+        for i, (label, value) in enumerate(lines):
+            if label:
+                safe_addstr(self.stdscr, py + 2 + i, px + 3, f"  {label:<13s}", label_attr)
+            if value:
+                safe_addstr(self.stdscr, py + 2 + i, px + 19, value, value_attr)
+
     # --- Traceroute popups ---
 
     def _draw_traceroute_input_popup(self, h: int, w: int):
@@ -1001,6 +1049,7 @@ class UIManager:
             self.show_info = False
             self.show_warning = False
             self.show_routes = False
+            self.show_dns = False
             return True
 
         if ch_lower == k.help or key == curses.KEY_F1:
@@ -1031,6 +1080,14 @@ class UIManager:
             if self.show_routes:
                 self.show_help = False
                 self.show_info = False
+            return True
+
+        if ch_lower == k.show_dns:
+            self.show_dns = not self.show_dns
+            if self.show_dns:
+                self.show_help = False
+                self.show_info = False
+                self.show_routes = False
             return True
 
         if ch_lower == k.toggle_ip:

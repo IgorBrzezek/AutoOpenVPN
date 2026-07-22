@@ -1,6 +1,6 @@
 # AutoOVPN — VPNBook OpenVPN Config Downloader & Runner
 
-**Version:** 0.0.3  
+**Version:** 0.0.4  
 **Author:** Igor Brzezek  
 **GitHub:** [https://github.com/IgorBrzezek](https://github.com/IgorBrzezek)  
 
@@ -138,6 +138,15 @@ python autoovpn.py --run us16,tcp443 --addroute 192.168.53.0/24,10.10.10.1 --add
 
 # Run with a 1-hour timeout
 python autoovpn.py --run us16,tcp443 --timeout 01:00:00
+
+# Run in background, auto-log to file
+python autoovpn.py --run us16,tcp443 --daemonize
+
+# Run in background with custom log
+python autoovpn.py -d --run us16,tcp443 --log myvpn.log
+
+# Kill running OpenVPN and cleanup
+python autoovpn.py --kill
 
 # Display all available --run combinations (without downloading)
 python autoovpn.py --run
@@ -369,6 +378,38 @@ On disconnect (timeout, user interrupt, or OpenVPN exit), routes are cleaned up 
 
 When `--addroute` is used, the routes are displayed in the summary before OpenVPN starts:
 
+### `-d`, `--daemonize`
+
+Run the VPN connection in the background. At startup, prints `Connecting to VPN...`, waits for the connection to establish, shows `OK`, and frees the terminal. All subsequent output goes to a log file (auto-generated or specified with `--log`).
+
+```
+python autoovpn.py --run us16,tcp443 --daemonize
+python autoovpn.py -d --run us16,tcp443 --log myvpn.log
+```
+
+Implies `--log` with an auto-generated filename if not explicitly given.
+
+### `--log`
+
+Write all terminal output to a log file in append mode. If the filename does not end with `.log`, the extension is added automatically.
+
+```
+python autoovpn.py --run us16,tcp443 --log /var/log/vpn.log
+python autoovpn.py --run us16,tcp443 --log myvpn       # creates myvpn.log
+```
+
+Can be used with or without `--daemonize`.
+
+### `--kill`
+
+Find and terminate a running OpenVPN instance started by autoovpn, remove any added routes, and clean up temporary files. Equivalent to pressing Ctrl+C on the running instance.
+
+```
+python autoovpn.py --kill
+```
+
+Works by reading PID and route files saved during the VPN session.
+
 ---
 
 ## Examples
@@ -584,7 +625,7 @@ General application settings.
 | Key                 | Default        | Description                                          |
 |---------------------|----------------|------------------------------------------------------|
 | `app_name`          | OVPNMonitor    | Application name displayed in the top status bar     |
-| `version`           | 0.0.3          | Version string                                       |
+| `version`           | 0.0.4          | Version string                                       |
 | `author`            | Igor Brzezek   | Author name                                          |
 | `background_char`   | ▒              | Background fill character (e.g. `░`, `▒`, `▓`, `·`, `°`, `#`). Leave empty for solid background. |
 | `refresh_interval_s`| 1              | Screen refresh interval in seconds (1–5)             |
@@ -703,6 +744,7 @@ Customizable keyboard shortcuts for the TUI. Each value is a single character.
 | `toggle_pause` | p       | Pause/resume all data collectors               |
 | `toggle_ping`  | n       | Show/hide the ping monitor panel               |
 | `show_routes`  | r       | Show the system routing table                  |
+| `show_dns`     | d       | Show DNS servers popup                         |
 
 Example:
 ```ini
@@ -849,10 +891,11 @@ All files are saved to the same directory as the `autoovpn.py` script.
 │  └─────────────────────┘         └───────────────────────┘       │
 │                                                                   │
 │  ┌─────────────────────────────────────────────────────────────┐  │
-│  │  CLI (argparse) — 16 options                               │  │
+│  │  CLI (argparse) — 19 options                               │  │
 │  │  --scan | --get | --proto | --port | --getlogin | --inject │  │
 │  │  --shortdir | --datadir | --run | --dev | --timeout        │  │
-│  │  --user | --pwd | --datafile | --addroute                  │  │
+│  │  --user | --pwd | --datafile | --addroute | --daemonize    │  │
+│  │  --log | --kill                                             │  │
 │  └─────────────────────────────────────────────────────────────┘  │
 └────────────────────────────────────────────────────────────────────┘
 ```

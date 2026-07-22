@@ -17,6 +17,8 @@ Examples:
    autoovpn --run file.ovpn --user vpnbook --pwd secret # with custom credentials
    autoovpn --run file.ovpn --datafile myauth.txt   # with existing auth file
    autoovpn --run us16,tcp443 --addroute 192.168.53.0/24,10.10.10.1 --addroute 10.0.0.0/8,10.8.0.1  # add routes after connect
+   autoovpn -d --run us16,tcp443 --log myvpn  # daemonize + log to myvpn.log
+   autoovpn --kill                              # kill OpenVPN + cleanup routes
 """
 
 import argparse
@@ -32,6 +34,7 @@ import tempfile
 import time
 import urllib.request
 import getpass
+import glob
 
 
 # ---------------------------------------------------------------------------
@@ -76,7 +79,7 @@ def color_header(text):
 
 
 AUTHOR = "Igor Brzezek"
-VERSION = "0.0.3"
+VERSION = "0.0.4"
 GITHUB = "https://github.com/IgorBrzezek"
 
 # ---------------------------------------------------------------------------
@@ -104,6 +107,9 @@ FALLBACK_PROTOCOLS = [
 
 FALLBACK_USERNAME = "vpnbook"
 FALLBACK_PASSWORD = ""
+
+PID_DIR = tempfile.gettempdir()
+PID_PREFIX = "autoovpn_"
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -476,6 +482,262 @@ def _del_route(network_cidr, gateway):
     return True
 
 
+def _save_pid_routes(addroute=None):
+    pid_file = os.path.join(PID_DIR, f"{PID_PREFIX}{os.getpid()}.pid")
+    try:
+        with open(pid_file, 'w') as f:
+            f.write(str(os.getpid()))
+    except OSError:
+        pass
+    if addroute:
+        routes_file = os.path.join(PID_DIR, f"{PID_PREFIX}{os.getpid()}.routes")
+        try:
+            with open(routes_file, 'w') as f:
+                for net, gw in addroute:
+                    f.write(f"{net},{gw}\n")
+        except OSError:
+            pass
+
+
+def _cleanup_pid_routes():
+    pid_file = os.path.join(PID_DIR, f"{PID_PREFIX}{os.getpid()}.pid")
+    routes_file = os.path.join(PID_DIR, f"{PID_PREFIX}{os.getpid()}.routes")
+    for f in (pid_file, routes_file):
+        try:
+            os.unlink(f)
+        except OSError:
+            pass
+
+
+def do_kill():
+    found_any = False
+    for f in glob.glob(os.path.join(PID_DIR, f"{PID_PREFIX}*.pid")):
+        try:
+            with open(f) as pf:
+                pid = int(pf.read().strip())
+            try:
+                os.kill(pid, signal.SIGTERM)
+                print(color_status(f"Terminated OpenVPN (PID {pid})", '+'))
+                found_any = True
+            except ProcessLookupError:
+                print(color_status(f"Process {pid} not found (already exited)", '-'))
+            except OSError as e:
+                print(color_status(f"Error killing PID {pid}: {e}", '!'))
+        except (ValueError, OSError) as e:
+            print(color_status(f"Error reading PID file {f}: {e}", '!'))
+        finally:
+            try:
+                os.unlink(f)
+            except OSError:
+                pass
+    for f in glob.glob(os.path.join(PID_DIR, f"{PID_PREFIX}*.routes")):
+        try:
+            with open(f) as rf:
+                for line in rf:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    parts = line.split(',')
+                    if len(parts) == 2:
+                        _del_route(parts[0].strip(), parts[1].strip())
+            os.unlink(f)
+        except OSError:
+            pass
+    try:
+        result = subprocess.run(
+            ["pgrep", "-f", r"openvpn\s+--client\s+--config"],
+            capture_output=True, text=True, timeout=5)
+        for pid_str in result.stdout.strip().splitlines():
+            if pid_str:
+                try:
+                    pid = int(pid_str)
+                    os.kill(pid, signal.SIGTERM)
+                    print(color_status(f"Terminated OpenVPN (PID {pid})", '+'))
+                    found_any = True
+                except (OSError, ProcessLookupError):
+                    pass
+    except (subprocess.TimeoutExpired, OSError):
+        pass
+    if not found_any:
+        print(color_status("No running OpenVPN instance found.", '!'))
+
+
+class _TeeFile:
+    def __init__(self, log_path, is_stderr=False):
+        self.log = open(log_path, 'a')
+        self.is_stderr = is_stderr
+        self.stdout = sys.stdout
+        self.stderr = sys.stderr
+
+    def write(self, data):
+        if self.is_stderr:
+            self.stderr.write(data)
+        else:
+            self.stdout.write(data)
+        self.log.write(data)
+        self.log.flush()
+
+    def flush(self):
+        if self.is_stderr:
+            self.stderr.flush()
+        else:
+            self.stdout.flush()
+        self.log.flush()
+
+    def close(self):
+        self.log.close()
+
+
+def find_openvpn_pids():
+    pids = set()
+    for f in glob.glob(os.path.join(PID_DIR, f"{PID_PREFIX}*.pid")):
+        try:
+            with open(f) as pf:
+                pid = int(pf.read().strip())
+            try:
+                os.kill(pid, 0)
+                pids.add(pid)
+            except ProcessLookupError:
+                os.unlink(f)
+        except (ValueError, OSError):
+            try:
+                os.unlink(f)
+            except OSError:
+                pass
+    try:
+        result = subprocess.run(
+            ["pgrep", "-x", "openvpn"],
+            capture_output=True, text=True, timeout=5)
+        for pid_str in result.stdout.strip().splitlines():
+            if pid_str:
+                try:
+                    pids.add(int(pid_str))
+                except ValueError:
+                    pass
+    except (subprocess.TimeoutExpired, OSError):
+        pass
+    return sorted(pids)
+
+
+def do_check():
+    pids = find_openvpn_pids()
+    if not pids:
+        print(color_status("OpenVPN is not running.", '!'))
+        return
+
+    for pid in pids:
+        cmdline = ""
+        try:
+            with open(f"/proc/{pid}/cmdline") as f:
+                cmdline = f.read().replace('\0', ' ')
+        except (IOError, OSError):
+            pass
+
+        config_file = ""
+        if cmdline:
+            parts = cmdline.split()
+            for i, p in enumerate(parts):
+                if p == '--config' and i + 1 < len(parts):
+                    config_file = parts[i + 1]
+                    break
+
+        server, proto, port, tun_dev = "N/A", "N/A", "N/A", ""
+        if config_file and os.path.isfile(config_file):
+            try:
+                with open(config_file) as f:
+                    content = f.read()
+                m = re.search(r'^remote\s+(\S+)\s+(\d+)', content, re.MULTILINE)
+                if m:
+                    server, port = m.group(1), m.group(2)
+                m = re.search(r'^proto\s+(tcp|udp)', content, re.MULTILINE | re.IGNORECASE)
+                if m:
+                    proto = m.group(1).upper()
+                m = re.search(r'^dev\s+(tun\d+)', content, re.MULTILINE)
+                if m:
+                    tun_dev = m.group(1)
+            except OSError:
+                pass
+
+        uptime_str = "N/A"
+        try:
+            with open(f"/proc/{pid}/stat") as f:
+                stat = f.read()
+            parts = stat.split()
+            if len(parts) > 21:
+                start_ticks = int(parts[21])
+                clk_tck = os.sysconf(os.sysconf_names['SC_CLK_TCK'])
+                with open("/proc/stat") as f:
+                    for line in f:
+                        if line.startswith("btime "):
+                            boot_time = int(line.split()[1])
+                            break
+                start_time = boot_time + start_ticks // clk_tck
+                uptime_secs = max(0, time.time() - start_time)
+                h = int(uptime_secs) // 3600
+                m = (int(uptime_secs) % 3600) // 60
+                s = int(uptime_secs) % 60
+                uptime_str = f"{h:02d}:{m:02d}:{s:02d}"
+        except (IOError, OSError, ValueError, KeyError):
+            pass
+
+        tun_ip = ""
+        if tun_dev:
+            try:
+                r = subprocess.run(["ip", "-4", "addr", "show", "dev", tun_dev],
+                                   capture_output=True, text=True, timeout=3)
+                m = re.search(r'inet\s+(\d+\.\d+\.\d+\.\d+)', r.stdout)
+                if m:
+                    tun_ip = m.group(1)
+            except (subprocess.TimeoutExpired, OSError):
+                pass
+        else:
+            try:
+                r = subprocess.run(["ip", "-o", "link", "show", "type", "tun"],
+                                   capture_output=True, text=True, timeout=3)
+                for line in r.stdout.splitlines():
+                    m = re.search(r'^\d+:\s+(tun\d+)', line)
+                    if m:
+                        tun_dev = m.group(1)
+                        break
+                if tun_dev:
+                    r = subprocess.run(["ip", "-4", "addr", "show", "dev", tun_dev],
+                                       capture_output=True, text=True, timeout=3)
+                    m = re.search(r'inet\s+(\d+\.\d+\.\d+\.\d+)', r.stdout)
+                    if m:
+                        tun_ip = m.group(1)
+            except (subprocess.TimeoutExpired, OSError):
+                pass
+
+        routes = []
+        for f in glob.glob(os.path.join(PID_DIR, f"{PID_PREFIX}{pid}.routes")):
+            try:
+                with open(f) as rf:
+                    for line in rf:
+                        line = line.strip()
+                        if line:
+                            routes.append(line)
+            except OSError:
+                pass
+
+        print(color_header(f"  OpenVPN Instance (PID {pid})"))
+        print(f"  {c('PID:', 'b') if COLOR_ENABLED else 'PID:'}          {pid}")
+        print(f"  {c('Config:', 'b') if COLOR_ENABLED else 'Config:'}      {config_file or 'N/A'}")
+        print(f"  {c('Server:', 'b') if COLOR_ENABLED else 'Server:'}      {server} ({proto}/{port})")
+        if tun_dev:
+            ip_disp = c(tun_ip, 'g') if COLOR_ENABLED else tun_ip
+            print(f"  {c('Interface:', 'b') if COLOR_ENABLED else 'Interface:'}   {tun_dev}  {ip_disp}")
+        else:
+            print(f"  {c('Interface:', 'b') if COLOR_ENABLED else 'Interface:'}   not detected")
+        print(f"  {c('Uptime:', 'b') if COLOR_ENABLED else 'Uptime:'}      {uptime_str}")
+        if routes:
+            print(f"  {c('Routes:', 'b') if COLOR_ENABLED else 'Routes:'}")
+            for r in routes:
+                parts = r.split(',')
+                if len(parts) == 2:
+                    print(f"    {parts[0]} via {parts[1]}")
+        print()
+
+
 def show_connection_info(tun_device=None):
     """Display public IP and both tunnel addresses after VPN connection."""
     print()
@@ -521,6 +783,33 @@ def show_connection_info(tun_device=None):
 
 
 def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None, addroute=None, showip=False):
+    # Check for existing OpenVPN before starting a new one
+    if find_openvpn_pids():
+        print(color_status(
+            "Another OpenVPN instance is already running. "
+            "Use '--kill' first or stop it manually.", '!'),
+            file=sys.stderr)
+        return
+    # Also check PID files from previous autoovpn runs
+    for f in glob.glob(os.path.join(PID_DIR, f"{PID_PREFIX}*.pid")):
+        try:
+            with open(f) as pf:
+                pid = int(pf.read().strip())
+            try:
+                os.kill(pid, 0)
+                print(color_status(
+                    "Another OpenVPN instance is already running (PID file). "
+                    "Use '--kill' first or stop it manually.", '!'),
+                    file=sys.stderr)
+                return
+            except ProcessLookupError:
+                os.unlink(f)
+        except (ValueError, OSError):
+            try:
+                os.unlink(f)
+            except OSError:
+                pass
+
     cmd = ["sudo", "openvpn", "--client", "--config", config_path]
     print(color_status(f"Running: {' '.join(cmd)}", '*'))
     if addroute:
@@ -537,6 +826,8 @@ def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None,
         print(color_status("'sudo' or 'openvpn' not found. Install them or check your PATH.", '!'),
               file=sys.stderr)
         return
+
+    _save_pid_routes(addroute)
 
     added_routes = []
     connected_event = threading.Event()
@@ -632,6 +923,7 @@ def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None,
             _kill_pg_hard()
             process.wait()
     finally:
+        _cleanup_pid_routes()
         for route in reversed(added_routes):
             _del_route(*route)
         if temp_auth_file and os.path.exists(temp_auth_file.name):
@@ -695,10 +987,38 @@ def main():
                         help="After connection, show public IP and tunnel addresses")
     parser.add_argument("--color", action="store_true",
                         help="Colorize output with ANSI colors")
+    parser.add_argument("-d", "--daemonize", action="store_true",
+                        help="Run in background: show connecting message, "
+                             "free console after connect; implies --log if not set")
+    parser.add_argument("--log", metavar="FILENAME",
+                        help="Log file path (default extension .log); output is appended")
+    parser.add_argument("--kill", action="store_true",
+                        help="Kill running OpenVPN, remove routes, and cleanup")
+    parser.add_argument("--check", action="store_true",
+                        help="Check if OpenVPN is running and show parameters")
     args = parser.parse_args()
 
     global COLOR_ENABLED
     COLOR_ENABLED = args.color
+
+    if args.kill:
+        do_kill()
+        return
+
+    if args.check:
+        do_check()
+        return
+
+    if args.run and find_openvpn_pids():
+        print(color_status("OpenVPN is already running. Use '--kill' first or stop it manually.", '!'))
+        return
+
+    if args.log:
+        log_path = args.log
+        if not log_path.endswith('.log'):
+            log_path += '.log'
+        sys.stdout = _TeeFile(log_path, is_stderr=False)
+        sys.stderr = _TeeFile(log_path, is_stderr=True)
 
     timeout_seconds = None
     if args.timeout is not None:
@@ -733,6 +1053,59 @@ def main():
         return
     if args.addroute and not args.run:
         print(color_status("--addroute can only be used with --run", '!'), file=sys.stderr)
+        return
+    if args.daemonize and not args.run:
+        print(color_status("--daemonize can only be used with --run", '!'), file=sys.stderr)
+        return
+
+    # --daemonize: spawn background process and exit
+    if args.daemonize:
+        if args.log:
+            daemon_log = args.log
+            if not daemon_log.endswith('.log'):
+                daemon_log += '.log'
+        else:
+            daemon_log = f"autoovpn_{int(time.time())}.log"
+        child_argv = [sys.executable, sys.argv[0]]
+        for a in sys.argv[1:]:
+            if a in ('-d', '--daemonize'):
+                continue
+            child_argv.append(a)
+        if not args.log:
+            child_argv.extend(['--log', daemon_log])
+        # Note current log size before child writes anything
+        try:
+            with open(daemon_log, 'r') as f:
+                f.seek(0, 2)
+                log_start = f.tell()
+        except (IOError, OSError):
+            log_start = 0
+
+        proc = subprocess.Popen(
+            child_argv,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        sys.stdout.write("Connecting to VPN...")
+        sys.stdout.flush()
+        connected = False
+        for _ in range(120):
+            time.sleep(0.5)
+            try:
+                with open(daemon_log, 'r') as f:
+                    f.seek(log_start)
+                    if 'Initialization Sequence Completed' in f.read():
+                        connected = True
+                        break
+            except (IOError, OSError):
+                pass
+            if proc.poll() is not None:
+                break
+        if connected:
+            print("\rConnecting to VPN... OK")
+        else:
+            print("\rConnecting to VPN... FAILED")
         return
 
     # -- --- parse --run -------------------------------------------------------

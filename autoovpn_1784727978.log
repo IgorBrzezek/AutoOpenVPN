@@ -1,0 +1,6 @@
+[*] Running: sudo openvpn --client --config /home/yyy/uczelnie/autoopenvpn/us16_tcp443_443.ovpn
+
+[*] Time remaining: 00:00:02  sudo: a terminal is required to read the password; either use the -S option to read from standard input or configure an askpass helper
+sudo: a password is required
+
+[*] Temp auth file /tmp/vpnbook_auth_xnfvtwpr.txt removed.

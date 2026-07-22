@@ -1,0 +1,1496 @@
+Connecting to VPN...[94m[*][0m [94mScanning VPNBook for available servers and credentials...[0m
+
+[96m============================================================[0m
+[96m[1m  VPNBook Scan Results[0m[0m
+[96m============================================================[0m
+
+  [1mCredentials:[0m
+    [94mUsername[0m : [93mvpnbook[0m
+    [94mPassword[0m : [93mueedn87[0m
+    Updated  : Jul 18, 2026
+
+  [1mOpenVPN Servers (10):[0m
+    [96mus16[0m  us16.vpnbook.com
+    [96mus178[0m  us178.vpnbook.com
+    [96mca149[0m  ca149.vpnbook.com
+    [96mca196[0m  ca196.vpnbook.com
+    [96muk205[0m  uk205.vpnbook.com
+    [96muk68[0m  uk68.vpnbook.com
+    [96mde20[0m  de20.vpnbook.com
+    [96mde220[0m  de220.vpnbook.com
+    [96mfr200[0m  fr200.vpnbook.com
+    [96mfr231[0m  fr2311.vpnbook.com
+
+  [1mProtocols (4):[0m
+    [93mTCP[0m  443     [96m(tcp443)[0m
+    [93mTCP[0m  80      [96m(tcp80)[0m
+    [93mUDP[0m  53      [96m(udp53)[0m
+    [93mUDP[0m  25000   [96m(udp25000)[0m
+
+============================================================
+
+[94m[*][0m [94mCredentials saved to /tmp/vpnbook_auth_2fdub56g.txt[0m
+[94m[*][0m [94mDownloading 1 config(s) from VPNBook...[0m
+
+[94m[uk68] [UDP 25000][0m   [92m[+][0m [92muk68_udp25000_25000.ovpn[0m
+
+[92m[+][0m [92mDone: 1/1 config(s) downloaded successfully.[0m
+
+[94m[*][0m [94mVPN credentials:[0m
+    [94mUsername[0m: [93mvpnbook[0m
+    [94mPassword[0m: [93mueedn87[0m
+[94m[*][0m [94mRunning: sudo openvpn --client --config /home/yyy/uczelnie/autoopenvpn/uk68_udp25000_25000.ovpn[0m
+[94m[*][0m [94mRoutes to add after connection:[0m
+    1. 192.168.55.0/24 via 192.168.53.1
+    2. 192.168.54.0/24 via 192.168.53.1
+
+2026-07-22 15:53:55 WARNING: file '/tmp/vpnbook_auth_2fdub56g.txt' is group or others accessible
+2026-07-22 15:53:55 OpenVPN 2.5.11 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Jul  8 2026
+2026-07-22 15:53:55 library versions: OpenSSL 3.0.2 15 Mar 2022, LZO 2.10
+2026-07-22 15:53:55 WARNING: No server certificate verification method has been enabled.  See http://openvpn.net/howto.html#mitm for more info.
+2026-07-22 15:53:55 TCP/UDP: Preserving recently used remote address: [AF_INET]145.239.255.68:25000
+2026-07-22 15:53:55 Socket Buffers: R=[212992->212992] S=[212992->212992]
+2026-07-22 15:53:55 UDP link local: (not bound)
+2026-07-22 15:53:55 UDP link remote: [AF_INET]145.239.255.68:25000
+2026-07-22 15:53:55 TLS: Initial packet from [AF_INET]145.239.255.68:25000, sid=245af897 0f48d2de
+2026-07-22 15:53:55 WARNING: this configuration may cache passwords in memory -- use the auth-nocache option to prevent this
+2026-07-22 15:53:55 VERIFY OK: depth=1, CN=vpnbook.com
+2026-07-22 15:53:55 VERIFY OK: depth=0, CN=server.vpnbook.com
+2026-07-22 15:53:55 Control Channel: TLSv1.3, cipher TLSv1.3 TLS_AES_256_GCM_SHA384, peer certificate: 2048 bit RSA, signature: RSA-SHA256
+2026-07-22 15:53:55 [server.vpnbook.com] Peer Connection Initiated with [AF_INET]145.239.255.68:25000
+2026-07-22 15:53:55 PUSH: Received control message: 'PUSH_REPLY,redirect-gateway def1,dhcp-option DNS 1.1.1.1,dhcp-option DNS 8.8.8.8,block-outside-dns,route 10.102.192.1,topology net30,ping 10,ping-restart 60,ifconfig 10.102.192.174 10.102.192.173,peer-id 69,cipher AES-256-GCM'
+2026-07-22 15:53:55 WARNING: You have specified redirect-gateway and redirect-private at the same time (or the same option multiple times). This is not well supported and may lead to unexpected results
+2026-07-22 15:53:55 Options error: Unrecognized option or missing or extra parameter(s) in [PUSH-OPTIONS]:4: block-outside-dns (2.5.11)
+2026-07-22 15:53:55 OPTIONS IMPORT: timers and/or timeouts modified
+2026-07-22 15:53:55 OPTIONS IMPORT: --ifconfig/up options modified
+2026-07-22 15:53:55 OPTIONS IMPORT: route options modified
+2026-07-22 15:53:55 OPTIONS IMPORT: --ip-win32 and/or --dhcp-option options modified
+2026-07-22 15:53:55 OPTIONS IMPORT: peer-id set
+2026-07-22 15:53:55 OPTIONS IMPORT: adjusting link_mtu to 1624
+2026-07-22 15:53:55 OPTIONS IMPORT: data channel crypto options modified
+2026-07-22 15:53:55 Outgoing Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 15:53:55 Incoming Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 15:53:55 net_route_v4_best_gw query: dst 0.0.0.0
+2026-07-22 15:53:55 net_route_v4_best_gw result: via 192.168.53.1 dev enp2s0
+2026-07-22 15:53:55 ROUTE_GATEWAY 192.168.53.1/255.255.255.0 IFACE=enp2s0 HWADDR=fc:aa:14:7f:fc:78
+2026-07-22 15:53:55 TUN/TAP device tun2 opened
+2026-07-22 15:53:55 net_iface_mtu_set: mtu 1500 for tun2
+2026-07-22 15:53:55 net_iface_up: set tun2 up
+2026-07-22 15:53:55 net_addr_ptp_v4_add: 10.102.192.174 peer 10.102.192.173 dev tun2
+2026-07-22 15:53:58 net_route_v4_add: 145.239.255.68/32 via 192.168.53.1 dev [NULL] table 0 metric -1
+2026-07-22 15:53:58 net_route_v4_add: 0.0.0.0/1 via 10.102.192.173 dev [NULL] table 0 metric -1
+2026-07-22 15:53:58 net_route_v4_add: 128.0.0.0/1 via 10.102.192.173 dev [NULL] table 0 metric -1
+2026-07-22 15:53:58 net_route_v4_add: 10.102.192.1/32 via 10.102.192.173 dev [NULL] table 0 metric -1
+[96m2026-07-22 15:53:58 Initialization Sequence Completed
+[0mConnecting to VPN... OK
+Connecting to VPN...Connecting to VPN... OK
+Connecting to VPN...Connecting to VPN... OK
+[94m[*][0m [94mScanning VPNBook for available servers and credentials...[0m
+
+[96m============================================================[0m
+[96m[1m  VPNBook Scan Results[0m[0m
+[96m============================================================[0m
+
+  [1mCredentials:[0m
+    [94mUsername[0m : [93mvpnbook[0m
+    [94mPassword[0m : [93mueedn87[0m
+    Updated  : Jul 18, 2026
+
+  [1mOpenVPN Servers (10):[0m
+    [96mus16[0m  us16.vpnbook.com
+    [96mus178[0m  us178.vpnbook.com
+    [96mca149[0m  ca149.vpnbook.com
+    [96mca196[0m  ca196.vpnbook.com
+    [96muk205[0m  uk205.vpnbook.com
+    [96muk68[0m  uk68.vpnbook.com
+    [96mde20[0m  de20.vpnbook.com
+    [96mde220[0m  de220.vpnbook.com
+    [96mfr200[0m  fr200.vpnbook.com
+    [96mfr231[0m  fr2311.vpnbook.com
+
+  [1mProtocols (4):[0m
+    [93mTCP[0m  443     [96m(tcp443)[0m
+    [93mTCP[0m  80      [96m(tcp80)[0m
+    [93mUDP[0m  53      [96m(udp53)[0m
+    [93mUDP[0m  25000   [96m(udp25000)[0m
+
+============================================================
+
+[94m[*][0m [94mCredentials saved to /tmp/vpnbook_auth_ax6un2vg.txt[0m
+[94m[*][0m [94mDownloading 1 config(s) from VPNBook...[0m
+
+[94m[uk68] [UDP 25000][0m   [92m[+][0m [92muk68_udp25000_25000.ovpn[0m
+
+[92m[+][0m [92mDone: 1/1 config(s) downloaded successfully.[0m
+
+[94m[*][0m [94mVPN credentials:[0m
+    [94mUsername[0m: [93mvpnbook[0m
+    [94mPassword[0m: [93mueedn87[0m
+[94m[*][0m [94mRunning: sudo openvpn --client --config /home/yyy/uczelnie/autoopenvpn/uk68_udp25000_25000.ovpn[0m
+[94m[*][0m [94mRoutes to add after connection:[0m
+    1. 192.168.55.0/24 via 192.168.53.1
+    2. 192.168.54.0/24 via 192.168.53.1
+
+2026-07-22 15:56:35 WARNING: file '/tmp/vpnbook_auth_ax6un2vg.txt' is group or others accessible
+2026-07-22 15:56:35 OpenVPN 2.5.11 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Jul  8 2026
+2026-07-22 15:56:35 library versions: OpenSSL 3.0.2 15 Mar 2022, LZO 2.10
+2026-07-22 15:56:35 WARNING: No server certificate verification method has been enabled.  See http://openvpn.net/howto.html#mitm for more info.
+2026-07-22 15:56:35 TCP/UDP: Preserving recently used remote address: [AF_INET]145.239.255.68:25000
+2026-07-22 15:56:35 Socket Buffers: R=[212992->212992] S=[212992->212992]
+2026-07-22 15:56:35 UDP link local: (not bound)
+2026-07-22 15:56:35 UDP link remote: [AF_INET]145.239.255.68:25000
+2026-07-22 15:56:35 TLS: Initial packet from [AF_INET]145.239.255.68:25000, sid=9603bb5b d8708a20
+2026-07-22 15:56:35 WARNING: this configuration may cache passwords in memory -- use the auth-nocache option to prevent this
+2026-07-22 15:56:35 VERIFY OK: depth=1, CN=vpnbook.com
+2026-07-22 15:56:35 VERIFY OK: depth=0, CN=server.vpnbook.com
+2026-07-22 15:56:35 Control Channel: TLSv1.3, cipher TLSv1.3 TLS_AES_256_GCM_SHA384, peer certificate: 2048 bit RSA, signature: RSA-SHA256
+2026-07-22 15:56:35 [server.vpnbook.com] Peer Connection Initiated with [AF_INET]145.239.255.68:25000
+2026-07-22 15:56:35 PUSH: Received control message: 'PUSH_REPLY,redirect-gateway def1,dhcp-option DNS 1.1.1.1,dhcp-option DNS 8.8.8.8,block-outside-dns,route 10.102.192.1,topology net30,ping 10,ping-restart 60,ifconfig 10.102.193.162 10.102.193.161,peer-id 101,cipher AES-256-GCM'
+2026-07-22 15:56:35 WARNING: You have specified redirect-gateway and redirect-private at the same time (or the same option multiple times). This is not well supported and may lead to unexpected results
+2026-07-22 15:56:35 Options error: Unrecognized option or missing or extra parameter(s) in [PUSH-OPTIONS]:4: block-outside-dns (2.5.11)
+2026-07-22 15:56:35 OPTIONS IMPORT: timers and/or timeouts modified
+2026-07-22 15:56:35 OPTIONS IMPORT: --ifconfig/up options modified
+2026-07-22 15:56:35 OPTIONS IMPORT: route options modified
+2026-07-22 15:56:35 OPTIONS IMPORT: --ip-win32 and/or --dhcp-option options modified
+2026-07-22 15:56:35 OPTIONS IMPORT: peer-id set
+2026-07-22 15:56:35 OPTIONS IMPORT: adjusting link_mtu to 1624
+2026-07-22 15:56:35 OPTIONS IMPORT: data channel crypto options modified
+2026-07-22 15:56:35 Outgoing Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 15:56:35 Incoming Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 15:56:35 net_route_v4_best_gw query: dst 0.0.0.0
+2026-07-22 15:56:35 net_route_v4_best_gw result: via 192.168.53.1 dev enp2s0
+2026-07-22 15:56:35 ROUTE_GATEWAY 192.168.53.1/255.255.255.0 IFACE=enp2s0 HWADDR=fc:aa:14:7f:fc:78
+2026-07-22 15:56:35 TUN/TAP device tun2 opened
+2026-07-22 15:56:35 net_iface_mtu_set: mtu 1500 for tun2
+2026-07-22 15:56:35 net_iface_up: set tun2 up
+2026-07-22 15:56:35 net_addr_ptp_v4_add: 10.102.193.162 peer 10.102.193.161 dev tun2
+Connecting to VPN...Connecting to VPN... OK
+2026-07-22 15:56:38 net_route_v4_add: 145.239.255.68/32 via 192.168.53.1 dev [NULL] table 0 metric -1
+2026-07-22 15:56:38 net_route_v4_add: 0.0.0.0/1 via 10.102.193.161 dev [NULL] table 0 metric -1
+2026-07-22 15:56:38 net_route_v4_add: 128.0.0.0/1 via 10.102.193.161 dev [NULL] table 0 metric -1
+2026-07-22 15:56:38 net_route_v4_add: 10.102.192.1/32 via 10.102.193.161 dev [NULL] table 0 metric -1
+[96m2026-07-22 15:56:38 Initialization Sequence Completed
+[0m[94m[*][0m [94mScanning VPNBook for available servers and credentials...[0m
+
+[96m============================================================[0m
+[96m[1m  VPNBook Scan Results[0m[0m
+[96m============================================================[0m
+
+  [1mCredentials:[0m
+    [94mUsername[0m : [93mvpnbook[0m
+    [94mPassword[0m : [93mueedn87[0m
+    Updated  : Jul 18, 2026
+
+  [1mOpenVPN Servers (10):[0m
+    [96mus16[0m  us16.vpnbook.com
+    [96mus178[0m  us178.vpnbook.com
+    [96mca149[0m  ca149.vpnbook.com
+    [96mca196[0m  ca196.vpnbook.com
+    [96muk205[0m  uk205.vpnbook.com
+    [96muk68[0m  uk68.vpnbook.com
+    [96mde20[0m  de20.vpnbook.com
+    [96mde220[0m  de220.vpnbook.com
+    [96mfr200[0m  fr200.vpnbook.com
+    [96mfr231[0m  fr2311.vpnbook.com
+
+  [1mProtocols (4):[0m
+    [93mTCP[0m  443     [96m(tcp443)[0m
+    [93mTCP[0m  80      [96m(tcp80)[0m
+    [93mUDP[0m  53      [96m(udp53)[0m
+    [93mUDP[0m  25000   [96m(udp25000)[0m
+
+============================================================
+
+[94m[*][0m [94mCredentials saved to /tmp/vpnbook_auth_hh97e8sb.txt[0m
+[94m[*][0m [94mDownloading 1 config(s) from VPNBook...[0m
+
+[94m[uk68] [UDP 25000][0m   [92m[+][0m [92muk68_udp25000_25000.ovpn[0m
+
+[92m[+][0m [92mDone: 1/1 config(s) downloaded successfully.[0m
+
+[94m[*][0m [94mVPN credentials:[0m
+    [94mUsername[0m: [93mvpnbook[0m
+    [94mPassword[0m: [93mueedn87[0m
+[94m[*][0m [94mRunning: sudo openvpn --client --config /home/yyy/uczelnie/autoopenvpn/uk68_udp25000_25000.ovpn[0m
+[94m[*][0m [94mRoutes to add after connection:[0m
+    1. 192.168.55.0/24 via 192.168.53.1
+    2. 192.168.54.0/24 via 192.168.53.1
+
+2026-07-22 15:56:55 WARNING: file '/tmp/vpnbook_auth_hh97e8sb.txt' is group or others accessible
+2026-07-22 15:56:55 OpenVPN 2.5.11 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Jul  8 2026
+2026-07-22 15:56:55 library versions: OpenSSL 3.0.2 15 Mar 2022, LZO 2.10
+2026-07-22 15:56:55 WARNING: No server certificate verification method has been enabled.  See http://openvpn.net/howto.html#mitm for more info.
+2026-07-22 15:56:55 TCP/UDP: Preserving recently used remote address: [AF_INET]145.239.255.68:25000
+2026-07-22 15:56:55 Socket Buffers: R=[212992->212992] S=[212992->212992]
+2026-07-22 15:56:55 UDP link local: (not bound)
+2026-07-22 15:56:55 UDP link remote: [AF_INET]145.239.255.68:25000
+2026-07-22 15:56:55 TLS: Initial packet from [AF_INET]145.239.255.68:25000, sid=83ee3b06 51c1144f
+2026-07-22 15:56:55 WARNING: this configuration may cache passwords in memory -- use the auth-nocache option to prevent this
+2026-07-22 15:56:55 VERIFY OK: depth=1, CN=vpnbook.com
+2026-07-22 15:56:55 VERIFY OK: depth=0, CN=server.vpnbook.com
+2026-07-22 15:56:55 Control Channel: TLSv1.3, cipher TLSv1.3 TLS_AES_256_GCM_SHA384, peer certificate: 2048 bit RSA, signature: RSA-SHA256
+2026-07-22 15:56:55 [server.vpnbook.com] Peer Connection Initiated with [AF_INET]145.239.255.68:25000
+2026-07-22 15:56:55 PUSH: Received control message: 'PUSH_REPLY,redirect-gateway def1,dhcp-option DNS 1.1.1.1,dhcp-option DNS 8.8.8.8,block-outside-dns,route 10.102.192.1,topology net30,ping 10,ping-restart 60,ifconfig 10.102.192.150 10.102.192.149,peer-id 47,cipher AES-256-GCM'
+2026-07-22 15:56:55 WARNING: You have specified redirect-gateway and redirect-private at the same time (or the same option multiple times). This is not well supported and may lead to unexpected results
+2026-07-22 15:56:55 Options error: Unrecognized option or missing or extra parameter(s) in [PUSH-OPTIONS]:4: block-outside-dns (2.5.11)
+2026-07-22 15:56:55 OPTIONS IMPORT: timers and/or timeouts modified
+2026-07-22 15:56:55 OPTIONS IMPORT: --ifconfig/up options modified
+2026-07-22 15:56:55 OPTIONS IMPORT: route options modified
+2026-07-22 15:56:55 OPTIONS IMPORT: --ip-win32 and/or --dhcp-option options modified
+2026-07-22 15:56:55 OPTIONS IMPORT: peer-id set
+2026-07-22 15:56:55 OPTIONS IMPORT: adjusting link_mtu to 1624
+2026-07-22 15:56:55 OPTIONS IMPORT: data channel crypto options modified
+2026-07-22 15:56:55 Outgoing Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 15:56:55 Incoming Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 15:56:55 net_route_v4_best_gw query: dst 0.0.0.0
+2026-07-22 15:56:55 net_route_v4_best_gw result: via 192.168.53.1 dev enp2s0
+2026-07-22 15:56:55 ROUTE_GATEWAY 192.168.53.1/255.255.255.0 IFACE=enp2s0 HWADDR=fc:aa:14:7f:fc:78
+2026-07-22 15:56:55 ERROR: Cannot ioctl TUNSETIFF tun2: Device or resource busy (errno=16)
+2026-07-22 15:56:55 Exiting due to fatal error
+[94m[*][0m [94mScanning VPNBook for available servers and credentials...[0m
+
+[96m============================================================[0m
+[96m[1m  VPNBook Scan Results[0m[0m
+[96m============================================================[0m
+
+  [1mCredentials:[0m
+    [94mUsername[0m : [93mvpnbook[0m
+    [94mPassword[0m : [93mueedn87[0m
+    Updated  : Jul 18, 2026
+
+  [1mOpenVPN Servers (10):[0m
+    [96mus16[0m  us16.vpnbook.com
+    [96mus178[0m  us178.vpnbook.com
+    [96mca149[0m  ca149.vpnbook.com
+    [96mca196[0m  ca196.vpnbook.com
+    [96muk205[0m  uk205.vpnbook.com
+    [96muk68[0m  uk68.vpnbook.com
+    [96mde20[0m  de20.vpnbook.com
+    [96mde220[0m  de220.vpnbook.com
+    [96mfr200[0m  fr200.vpnbook.com
+    [96mfr231[0m  fr2311.vpnbook.com
+
+  [1mProtocols (4):[0m
+    [93mTCP[0m  443     [96m(tcp443)[0m
+    [93mTCP[0m  80      [96m(tcp80)[0m
+    [93mUDP[0m  53      [96m(udp53)[0m
+    [93mUDP[0m  25000   [96m(udp25000)[0m
+
+============================================================
+
+[94m[*][0m [94mCredentials saved to /tmp/vpnbook_auth_pv2trsd8.txt[0m
+[94m[*][0m [94mDownloading 1 config(s) from VPNBook...[0m
+
+[94m[uk68] [UDP 25000][0m   [92m[+][0m [92muk68_udp25000_25000.ovpn[0m
+
+[92m[+][0m [92mDone: 1/1 config(s) downloaded successfully.[0m
+
+[94m[*][0m [94mVPN credentials:[0m
+    [94mUsername[0m: [93mvpnbook[0m
+    [94mPassword[0m: [93mueedn87[0m
+[94m[*][0m [94mRunning: sudo openvpn --client --config /home/yyy/uczelnie/autoopenvpn/uk68_udp25000_25000.ovpn[0m
+[94m[*][0m [94mRoutes to add after connection:[0m
+    1. 192.168.55.0/24 via 192.168.53.1
+    2. 192.168.54.0/24 via 192.168.53.1
+
+2026-07-22 15:56:58 WARNING: file '/tmp/vpnbook_auth_pv2trsd8.txt' is group or others accessible
+2026-07-22 15:56:58 OpenVPN 2.5.11 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Jul  8 2026
+2026-07-22 15:56:58 library versions: OpenSSL 3.0.2 15 Mar 2022, LZO 2.10
+2026-07-22 15:56:58 WARNING: No server certificate verification method has been enabled.  See http://openvpn.net/howto.html#mitm for more info.
+2026-07-22 15:56:58 TCP/UDP: Preserving recently used remote address: [AF_INET]145.239.255.68:25000
+2026-07-22 15:56:58 Socket Buffers: R=[212992->212992] S=[212992->212992]
+2026-07-22 15:56:58 UDP link local: (not bound)
+2026-07-22 15:56:58 UDP link remote: [AF_INET]145.239.255.68:25000
+2026-07-22 15:56:58 TLS: Initial packet from [AF_INET]145.239.255.68:25000, sid=d51dd2e7 b5705c88
+2026-07-22 15:56:58 WARNING: this configuration may cache passwords in memory -- use the auth-nocache option to prevent this
+2026-07-22 15:56:58 VERIFY OK: depth=1, CN=vpnbook.com
+2026-07-22 15:56:58 VERIFY OK: depth=0, CN=server.vpnbook.com
+2026-07-22 15:56:58 Control Channel: TLSv1.3, cipher TLSv1.3 TLS_AES_256_GCM_SHA384, peer certificate: 2048 bit RSA, signature: RSA-SHA256
+2026-07-22 15:56:58 [server.vpnbook.com] Peer Connection Initiated with [AF_INET]145.239.255.68:25000
+2026-07-22 15:56:58 PUSH: Received control message: 'PUSH_REPLY,redirect-gateway def1,dhcp-option DNS 1.1.1.1,dhcp-option DNS 8.8.8.8,block-outside-dns,route 10.102.192.1,topology net30,ping 10,ping-restart 60,ifconfig 10.102.193.90 10.102.193.89,peer-id 89,cipher AES-256-GCM'
+2026-07-22 15:56:58 WARNING: You have specified redirect-gateway and redirect-private at the same time (or the same option multiple times). This is not well supported and may lead to unexpected results
+2026-07-22 15:56:58 Options error: Unrecognized option or missing or extra parameter(s) in [PUSH-OPTIONS]:4: block-outside-dns (2.5.11)
+2026-07-22 15:56:58 OPTIONS IMPORT: timers and/or timeouts modified
+2026-07-22 15:56:58 OPTIONS IMPORT: --ifconfig/up options modified
+2026-07-22 15:56:58 OPTIONS IMPORT: route options modified
+2026-07-22 15:56:58 OPTIONS IMPORT: --ip-win32 and/or --dhcp-option options modified
+2026-07-22 15:56:58 OPTIONS IMPORT: peer-id set
+2026-07-22 15:56:58 OPTIONS IMPORT: adjusting link_mtu to 1624
+2026-07-22 15:56:58 OPTIONS IMPORT: data channel crypto options modified
+2026-07-22 15:56:58 Outgoing Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 15:56:58 Incoming Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 15:56:58 net_route_v4_best_gw query: dst 0.0.0.0
+2026-07-22 15:56:58 net_route_v4_best_gw result: via 192.168.53.1 dev enp2s0
+2026-07-22 15:56:58 ROUTE_GATEWAY 192.168.53.1/255.255.255.0 IFACE=enp2s0 HWADDR=fc:aa:14:7f:fc:78
+2026-07-22 15:56:58 ERROR: Cannot ioctl TUNSETIFF tun2: Device or resource busy (errno=16)
+2026-07-22 15:56:58 Exiting due to fatal error
+[91m[!][0m [91mOpenVPN not connected after 15s, routes not added.[0m
+[94m[*][0m [94mTemp auth file /tmp/vpnbook_auth_hh97e8sb.txt removed.[0m
+[91m[!][0m [91mOpenVPN not connected after 15s, routes not added.[0m
+[94m[*][0m [94mTemp auth file /tmp/vpnbook_auth_pv2trsd8.txt removed.[0m
+Connecting to VPN...Connecting to VPN... OK
+[94m[*][0m [94mScanning VPNBook for available servers and credentials...[0m
+
+[96m============================================================[0m
+[96m[1m  VPNBook Scan Results[0m[0m
+[96m============================================================[0m
+
+  [1mCredentials:[0m
+    [94mUsername[0m : [93mvpnbook[0m
+    [94mPassword[0m : [93mueedn87[0m
+    Updated  : Jul 18, 2026
+
+  [1mOpenVPN Servers (10):[0m
+    [96mus16[0m  us16.vpnbook.com
+    [96mus178[0m  us178.vpnbook.com
+    [96mca149[0m  ca149.vpnbook.com
+    [96mca196[0m  ca196.vpnbook.com
+    [96muk205[0m  uk205.vpnbook.com
+    [96muk68[0m  uk68.vpnbook.com
+    [96mde20[0m  de20.vpnbook.com
+    [96mde220[0m  de220.vpnbook.com
+    [96mfr200[0m  fr200.vpnbook.com
+    [96mfr231[0m  fr2311.vpnbook.com
+
+  [1mProtocols (4):[0m
+    [93mTCP[0m  443     [96m(tcp443)[0m
+    [93mTCP[0m  80      [96m(tcp80)[0m
+    [93mUDP[0m  53      [96m(udp53)[0m
+    [93mUDP[0m  25000   [96m(udp25000)[0m
+
+============================================================
+
+[94m[*][0m [94mCredentials saved to /tmp/vpnbook_auth_ir28j263.txt[0m
+[94m[*][0m [94mDownloading 1 config(s) from VPNBook...[0m
+
+[94m[uk68] [UDP 25000][0m   [92m[+][0m [92muk68_udp25000_25000.ovpn[0m
+
+[92m[+][0m [92mDone: 1/1 config(s) downloaded successfully.[0m
+
+[94m[*][0m [94mVPN credentials:[0m
+    [94mUsername[0m: [93mvpnbook[0m
+    [94mPassword[0m: [93mueedn87[0m
+[94m[*][0m [94mRunning: sudo openvpn --client --config /home/yyy/uczelnie/autoopenvpn/uk68_udp25000_25000.ovpn[0m
+[94m[*][0m [94mRoutes to add after connection:[0m
+    1. 192.168.55.0/24 via 192.168.53.1
+    2. 192.168.54.0/24 via 192.168.53.1
+
+2026-07-22 15:57:52 WARNING: file '/tmp/vpnbook_auth_ir28j263.txt' is group or others accessible
+2026-07-22 15:57:52 OpenVPN 2.5.11 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Jul  8 2026
+2026-07-22 15:57:52 library versions: OpenSSL 3.0.2 15 Mar 2022, LZO 2.10
+2026-07-22 15:57:52 WARNING: No server certificate verification method has been enabled.  See http://openvpn.net/howto.html#mitm for more info.
+2026-07-22 15:57:52 TCP/UDP: Preserving recently used remote address: [AF_INET]145.239.255.68:25000
+2026-07-22 15:57:52 Socket Buffers: R=[212992->212992] S=[212992->212992]
+2026-07-22 15:57:52 UDP link local: (not bound)
+2026-07-22 15:57:52 UDP link remote: [AF_INET]145.239.255.68:25000
+2026-07-22 15:57:52 TLS: Initial packet from [AF_INET]145.239.255.68:25000, sid=21dcb1e6 ad03346a
+2026-07-22 15:57:52 WARNING: this configuration may cache passwords in memory -- use the auth-nocache option to prevent this
+2026-07-22 15:57:53 VERIFY OK: depth=1, CN=vpnbook.com
+2026-07-22 15:57:53 VERIFY OK: depth=0, CN=server.vpnbook.com
+2026-07-22 15:57:53 Control Channel: TLSv1.3, cipher TLSv1.3 TLS_AES_256_GCM_SHA384, peer certificate: 2048 bit RSA, signature: RSA-SHA256
+2026-07-22 15:57:53 [server.vpnbook.com] Peer Connection Initiated with [AF_INET]145.239.255.68:25000
+2026-07-22 15:57:53 PUSH: Received control message: 'PUSH_REPLY,redirect-gateway def1,dhcp-option DNS 1.1.1.1,dhcp-option DNS 8.8.8.8,block-outside-dns,route 10.102.192.1,topology net30,ping 10,ping-restart 60,ifconfig 10.102.193.126 10.102.193.125,peer-id 97,cipher AES-256-GCM'
+2026-07-22 15:57:53 WARNING: You have specified redirect-gateway and redirect-private at the same time (or the same option multiple times). This is not well supported and may lead to unexpected results
+2026-07-22 15:57:53 Options error: Unrecognized option or missing or extra parameter(s) in [PUSH-OPTIONS]:4: block-outside-dns (2.5.11)
+2026-07-22 15:57:53 OPTIONS IMPORT: timers and/or timeouts modified
+2026-07-22 15:57:53 OPTIONS IMPORT: --ifconfig/up options modified
+2026-07-22 15:57:53 OPTIONS IMPORT: route options modified
+2026-07-22 15:57:53 OPTIONS IMPORT: --ip-win32 and/or --dhcp-option options modified
+2026-07-22 15:57:53 OPTIONS IMPORT: peer-id set
+2026-07-22 15:57:53 OPTIONS IMPORT: adjusting link_mtu to 1624
+2026-07-22 15:57:53 OPTIONS IMPORT: data channel crypto options modified
+2026-07-22 15:57:53 Outgoing Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 15:57:53 Incoming Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 15:57:53 net_route_v4_best_gw query: dst 0.0.0.0
+2026-07-22 15:57:53 net_route_v4_best_gw result: via 192.168.53.1 dev enp2s0
+2026-07-22 15:57:53 ROUTE_GATEWAY 192.168.53.1/255.255.255.0 IFACE=enp2s0 HWADDR=fc:aa:14:7f:fc:78
+2026-07-22 15:57:53 TUN/TAP device tun2 opened
+2026-07-22 15:57:53 net_iface_mtu_set: mtu 1500 for tun2
+2026-07-22 15:57:53 net_iface_up: set tun2 up
+2026-07-22 15:57:53 net_addr_ptp_v4_add: 10.102.193.126 peer 10.102.193.125 dev tun2
+2026-07-22 15:57:55 net_route_v4_add: 145.239.255.68/32 via 192.168.53.1 dev [NULL] table 0 metric -1
+2026-07-22 15:57:55 net_route_v4_add: 0.0.0.0/1 via 10.102.193.125 dev [NULL] table 0 metric -1
+2026-07-22 15:57:55 net_route_v4_add: 128.0.0.0/1 via 10.102.193.125 dev [NULL] table 0 metric -1
+2026-07-22 15:57:55 net_route_v4_add: 10.102.192.1/32 via 10.102.193.125 dev [NULL] table 0 metric -1
+[96m2026-07-22 15:57:55 Initialization Sequence Completed
+[0m[94m[*][0m [94mScanning VPNBook for available servers and credentials...[0m
+
+[96m============================================================[0m
+[96m[1m  VPNBook Scan Results[0m[0m
+[96m============================================================[0m
+
+  [1mCredentials:[0m
+    [94mUsername[0m : [93mvpnbook[0m
+    [94mPassword[0m : [93mueedn87[0m
+    Updated  : Jul 18, 2026
+
+  [1mOpenVPN Servers (10):[0m
+    [96mus16[0m  us16.vpnbook.com
+    [96mus178[0m  us178.vpnbook.com
+    [96mca149[0m  ca149.vpnbook.com
+    [96mca196[0m  ca196.vpnbook.com
+    [96muk205[0m  uk205.vpnbook.com
+    [96muk68[0m  uk68.vpnbook.com
+    [96mde20[0m  de20.vpnbook.com
+    [96mde220[0m  de220.vpnbook.com
+    [96mfr200[0m  fr200.vpnbook.com
+    [96mfr231[0m  fr2311.vpnbook.com
+
+  [1mProtocols (4):[0m
+    [93mTCP[0m  443     [96m(tcp443)[0m
+    [93mTCP[0m  80      [96m(tcp80)[0m
+    [93mUDP[0m  53      [96m(udp53)[0m
+    [93mUDP[0m  25000   [96m(udp25000)[0m
+
+============================================================
+
+[94m[*][0m [94mCredentials saved to /tmp/vpnbook_auth_p7gq2yub.txt[0m
+[94m[*][0m [94mDownloading 1 config(s) from VPNBook...[0m
+
+[94m[uk68] [UDP 25000][0m   [92m[+][0m [92muk68_udp25000_25000.ovpn[0m
+
+[92m[+][0m [92mDone: 1/1 config(s) downloaded successfully.[0m
+
+[94m[*][0m [94mVPN credentials:[0m
+    [94mUsername[0m: [93mvpnbook[0m
+    [94mPassword[0m: [93mueedn87[0m
+[94m[*][0m [94mRunning: sudo openvpn --client --config /home/yyy/uczelnie/autoopenvpn/uk68_udp25000_25000.ovpn[0m
+[94m[*][0m [94mRoutes to add after connection:[0m
+    1. 192.168.55.0/24 via 192.168.53.1
+    2. 192.168.54.0/24 via 192.168.53.1
+
+2026-07-22 15:58:25 WARNING: file '/tmp/vpnbook_auth_p7gq2yub.txt' is group or others accessible
+2026-07-22 15:58:25 OpenVPN 2.5.11 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Jul  8 2026
+2026-07-22 15:58:25 library versions: OpenSSL 3.0.2 15 Mar 2022, LZO 2.10
+2026-07-22 15:58:25 WARNING: No server certificate verification method has been enabled.  See http://openvpn.net/howto.html#mitm for more info.
+2026-07-22 15:58:25 TCP/UDP: Preserving recently used remote address: [AF_INET]145.239.255.68:25000
+2026-07-22 15:58:25 Socket Buffers: R=[212992->212992] S=[212992->212992]
+2026-07-22 15:58:25 UDP link local: (not bound)
+2026-07-22 15:58:25 UDP link remote: [AF_INET]145.239.255.68:25000
+2026-07-22 15:58:25 TLS: Initial packet from [AF_INET]145.239.255.68:25000, sid=4f8648b5 faca243d
+2026-07-22 15:58:25 WARNING: this configuration may cache passwords in memory -- use the auth-nocache option to prevent this
+2026-07-22 15:58:25 VERIFY OK: depth=1, CN=vpnbook.com
+2026-07-22 15:58:25 VERIFY OK: depth=0, CN=server.vpnbook.com
+2026-07-22 15:58:25 Control Channel: TLSv1.3, cipher TLSv1.3 TLS_AES_256_GCM_SHA384, peer certificate: 2048 bit RSA, signature: RSA-SHA256
+2026-07-22 15:58:25 [server.vpnbook.com] Peer Connection Initiated with [AF_INET]145.239.255.68:25000
+2026-07-22 15:58:25 PUSH: Received control message: 'PUSH_REPLY,redirect-gateway def1,dhcp-option DNS 1.1.1.1,dhcp-option DNS 8.8.8.8,block-outside-dns,route 10.102.192.1,topology net30,ping 10,ping-restart 60,ifconfig 10.102.193.54 10.102.193.53,peer-id 35,cipher AES-256-GCM'
+2026-07-22 15:58:25 WARNING: You have specified redirect-gateway and redirect-private at the same time (or the same option multiple times). This is not well supported and may lead to unexpected results
+2026-07-22 15:58:25 Options error: Unrecognized option or missing or extra parameter(s) in [PUSH-OPTIONS]:4: block-outside-dns (2.5.11)
+2026-07-22 15:58:25 OPTIONS IMPORT: timers and/or timeouts modified
+2026-07-22 15:58:25 OPTIONS IMPORT: --ifconfig/up options modified
+2026-07-22 15:58:25 OPTIONS IMPORT: route options modified
+2026-07-22 15:58:25 OPTIONS IMPORT: --ip-win32 and/or --dhcp-option options modified
+2026-07-22 15:58:25 OPTIONS IMPORT: peer-id set
+2026-07-22 15:58:25 OPTIONS IMPORT: adjusting link_mtu to 1624
+2026-07-22 15:58:25 OPTIONS IMPORT: data channel crypto options modified
+2026-07-22 15:58:25 Outgoing Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 15:58:25 Incoming Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 15:58:25 net_route_v4_best_gw query: dst 0.0.0.0
+2026-07-22 15:58:25 net_route_v4_best_gw result: via 192.168.53.1 dev enp2s0
+2026-07-22 15:58:25 ROUTE_GATEWAY 192.168.53.1/255.255.255.0 IFACE=enp2s0 HWADDR=fc:aa:14:7f:fc:78
+2026-07-22 15:58:25 ERROR: Cannot ioctl TUNSETIFF tun2: Device or resource busy (errno=16)
+2026-07-22 15:58:25 Exiting due to fatal error
+[91m[!][0m [91mOpenVPN not connected after 15s, routes not added.[0m
+[94m[*][0m [94mTemp auth file /tmp/vpnbook_auth_p7gq2yub.txt removed.[0m
+[94m[*][0m [94mScanning VPNBook for available servers and credentials...[0m
+
+[96m============================================================[0m
+[96m[1m  VPNBook Scan Results[0m[0m
+[96m============================================================[0m
+
+  [1mCredentials:[0m
+    [94mUsername[0m : [93mvpnbook[0m
+    [94mPassword[0m : [93mueedn87[0m
+    Updated  : Jul 18, 2026
+
+  [1mOpenVPN Servers (10):[0m
+    [96mus16[0m  us16.vpnbook.com
+    [96mus178[0m  us178.vpnbook.com
+    [96mca149[0m  ca149.vpnbook.com
+    [96mca196[0m  ca196.vpnbook.com
+    [96muk205[0m  uk205.vpnbook.com
+    [96muk68[0m  uk68.vpnbook.com
+    [96mde20[0m  de20.vpnbook.com
+    [96mde220[0m  de220.vpnbook.com
+    [96mfr200[0m  fr200.vpnbook.com
+    [96mfr231[0m  fr2311.vpnbook.com
+
+  [1mProtocols (4):[0m
+    [93mTCP[0m  443     [96m(tcp443)[0m
+    [93mTCP[0m  80      [96m(tcp80)[0m
+    [93mUDP[0m  53      [96m(udp53)[0m
+    [93mUDP[0m  25000   [96m(udp25000)[0m
+
+============================================================
+
+[94m[*][0m [94mCredentials saved to /tmp/vpnbook_auth_60di2jti.txt[0m
+[94m[*][0m [94mDownloading 1 config(s) from VPNBook...[0m
+
+[94m[uk68] [UDP 25000][0m   [92m[+][0m [92muk68_udp25000_25000.ovpn[0m
+
+[92m[+][0m [92mDone: 1/1 config(s) downloaded successfully.[0m
+
+[94m[*][0m [94mVPN credentials:[0m
+    [94mUsername[0m: [93mvpnbook[0m
+    [94mPassword[0m: [93mueedn87[0m
+[94m[*][0m [94mRunning: sudo openvpn --client --config /home/yyy/uczelnie/autoopenvpn/uk68_udp25000_25000.ovpn[0m
+[94m[*][0m [94mRoutes to add after connection:[0m
+    1. 192.168.55.0/24 via 192.168.53.1
+    2. 192.168.54.0/24 via 192.168.53.1
+
+2026-07-22 16:08:33 WARNING: file '/tmp/vpnbook_auth_60di2jti.txt' is group or others accessible
+2026-07-22 16:08:33 OpenVPN 2.5.11 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Jul  8 2026
+2026-07-22 16:08:33 library versions: OpenSSL 3.0.2 15 Mar 2022, LZO 2.10
+2026-07-22 16:08:33 WARNING: No server certificate verification method has been enabled.  See http://openvpn.net/howto.html#mitm for more info.
+2026-07-22 16:08:33 TCP/UDP: Preserving recently used remote address: [AF_INET]145.239.255.68:25000
+2026-07-22 16:08:33 Socket Buffers: R=[212992->212992] S=[212992->212992]
+2026-07-22 16:08:33 UDP link local: (not bound)
+2026-07-22 16:08:33 UDP link remote: [AF_INET]145.239.255.68:25000
+2026-07-22 16:08:33 TLS: Initial packet from [AF_INET]145.239.255.68:25000, sid=e585d198 0633f800
+2026-07-22 16:08:33 WARNING: this configuration may cache passwords in memory -- use the auth-nocache option to prevent this
+2026-07-22 16:08:33 VERIFY OK: depth=1, CN=vpnbook.com
+2026-07-22 16:08:33 VERIFY OK: depth=0, CN=server.vpnbook.com
+2026-07-22 16:08:33 Control Channel: TLSv1.3, cipher TLSv1.3 TLS_AES_256_GCM_SHA384, peer certificate: 2048 bit RSA, signature: RSA-SHA256
+2026-07-22 16:08:33 [server.vpnbook.com] Peer Connection Initiated with [AF_INET]145.239.255.68:25000
+2026-07-22 16:08:33 PUSH: Received control message: 'PUSH_REPLY,redirect-gateway def1,dhcp-option DNS 1.1.1.1,dhcp-option DNS 8.8.8.8,block-outside-dns,route 10.102.192.1,topology net30,ping 10,ping-restart 60,ifconfig 10.102.193.158 10.102.193.157,peer-id 89,cipher AES-256-GCM'
+2026-07-22 16:08:33 WARNING: You have specified redirect-gateway and redirect-private at the same time (or the same option multiple times). This is not well supported and may lead to unexpected results
+2026-07-22 16:08:33 Options error: Unrecognized option or missing or extra parameter(s) in [PUSH-OPTIONS]:4: block-outside-dns (2.5.11)
+2026-07-22 16:08:33 OPTIONS IMPORT: timers and/or timeouts modified
+2026-07-22 16:08:33 OPTIONS IMPORT: --ifconfig/up options modified
+2026-07-22 16:08:33 OPTIONS IMPORT: route options modified
+2026-07-22 16:08:33 OPTIONS IMPORT: --ip-win32 and/or --dhcp-option options modified
+2026-07-22 16:08:33 OPTIONS IMPORT: peer-id set
+2026-07-22 16:08:33 OPTIONS IMPORT: adjusting link_mtu to 1624
+2026-07-22 16:08:33 OPTIONS IMPORT: data channel crypto options modified
+2026-07-22 16:08:33 Outgoing Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 16:08:33 Incoming Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 16:08:33 net_route_v4_best_gw query: dst 0.0.0.0
+2026-07-22 16:08:33 net_route_v4_best_gw result: via 192.168.53.1 dev enp2s0
+2026-07-22 16:08:33 ROUTE_GATEWAY 192.168.53.1/255.255.255.0 IFACE=enp2s0 HWADDR=fc:aa:14:7f:fc:78
+2026-07-22 16:08:33 TUN/TAP device tun2 opened
+2026-07-22 16:08:33 net_iface_mtu_set: mtu 1500 for tun2
+2026-07-22 16:08:33 net_iface_up: set tun2 up
+2026-07-22 16:08:33 net_addr_ptp_v4_add: 10.102.193.158 peer 10.102.193.157 dev tun2
+2026-07-22 16:08:35 net_route_v4_add: 145.239.255.68/32 via 192.168.53.1 dev [NULL] table 0 metric -1
+2026-07-22 16:08:35 net_route_v4_add: 0.0.0.0/1 via 10.102.193.157 dev [NULL] table 0 metric -1
+2026-07-22 16:08:35 net_route_v4_add: 128.0.0.0/1 via 10.102.193.157 dev [NULL] table 0 metric -1
+2026-07-22 16:08:35 net_route_v4_add: 10.102.192.1/32 via 10.102.193.157 dev [NULL] table 0 metric -1
+[96m2026-07-22 16:08:35 Initialization Sequence Completed
+[0m[94m[*][0m [94mAdding route: sudo ip route add 192.168.55.0/24 via 192.168.53.1[0m
+[92m[+][0m [92mRoute added: 192.168.55.0/24 via 192.168.53.1[0m
+[94m[*][0m [94mAdding route: sudo ip route add 192.168.54.0/24 via 192.168.53.1[0m
+[92m[+][0m [92mRoute added: 192.168.54.0/24 via 192.168.53.1[0m
+
+[96m============================================================[0m
+[96m[1m  Connection Info[0m[0m
+[96m============================================================[0m
+
+  [93mTunnel Interface[0m ([96mtun2[0m):
+    [94mLocal IP[0m : [96m10.102.193.158[0m
+    [94mPeer IP [0m : [96m10.102.193.157[0m
+
+  [93mPublic IP (via VPN)[0m: [96m145.239.255.68[0m
+
+============================================================
+
+
+[94m[*][0m [94mOpenVPN terminated by user.[0m
+2026-07-22 16:08:39 event_wait : Interrupted system call (code=4)
+2026-07-22 16:08:39 net_route_v4_del: 10.102.192.1/32 via 10.102.193.157 dev [NULL] table 0 metric -1
+2026-07-22 16:08:39 net_route_v4_del: 145.239.255.68/32 via 192.168.53.1 dev [NULL] table 0 metric -1
+2026-07-22 16:08:39 net_route_v4_del: 0.0.0.0/1 via 10.102.193.157 dev [NULL] table 0 metric -1
+2026-07-22 16:08:39 net_route_v4_del: 128.0.0.0/1 via 10.102.193.157 dev [NULL] table 0 metric -1
+2026-07-22 16:08:39 Closing TUN/TAP interface
+2026-07-22 16:08:39 net_addr_ptp_v4_del: 10.102.193.158 dev tun2
+2026-07-22 16:08:39 SIGTERM[hard,] received, process exiting
+[94m[*][0m [94mRemoving route: sudo ip route del 192.168.54.0/24 via 192.168.53.1[0m
+[93m[-][0m [93mRoute removed: 192.168.54.0/24 via 192.168.53.1[0m
+[94m[*][0m [94mRemoving route: sudo ip route del 192.168.55.0/24 via 192.168.53.1[0m
+[93m[-][0m [93mRoute removed: 192.168.55.0/24 via 192.168.53.1[0m
+[94m[*][0m [94mTemp auth file /tmp/vpnbook_auth_60di2jti.txt removed.[0m
+Connecting to VPN...[94m[*][0m [94mScanning VPNBook for available servers and credentials...[0m
+
+[96m============================================================[0m
+[96m[1m  VPNBook Scan Results[0m[0m
+[96m============================================================[0m
+
+  [1mCredentials:[0m
+    [94mUsername[0m : [93mvpnbook[0m
+    [94mPassword[0m : [93mueedn87[0m
+    Updated  : Jul 18, 2026
+
+  [1mOpenVPN Servers (10):[0m
+    [96mus16[0m  us16.vpnbook.com
+    [96mus178[0m  us178.vpnbook.com
+    [96mca149[0m  ca149.vpnbook.com
+    [96mca196[0m  ca196.vpnbook.com
+    [96muk205[0m  uk205.vpnbook.com
+    [96muk68[0m  uk68.vpnbook.com
+    [96mde20[0m  de20.vpnbook.com
+    [96mde220[0m  de220.vpnbook.com
+    [96mfr200[0m  fr200.vpnbook.com
+    [96mfr231[0m  fr2311.vpnbook.com
+
+  [1mProtocols (4):[0m
+    [93mTCP[0m  443     [96m(tcp443)[0m
+    [93mTCP[0m  80      [96m(tcp80)[0m
+    [93mUDP[0m  53      [96m(udp53)[0m
+    [93mUDP[0m  25000   [96m(udp25000)[0m
+
+============================================================
+
+[94m[*][0m [94mCredentials saved to /tmp/vpnbook_auth_p56gor72.txt[0m
+[94m[*][0m [94mDownloading 1 config(s) from VPNBook...[0m
+
+[94m[uk68] [UDP 25000][0m   [92m[+][0m [92muk68_udp25000_25000.ovpn[0m
+
+[92m[+][0m [92mDone: 1/1 config(s) downloaded successfully.[0m
+
+[94m[*][0m [94mVPN credentials:[0m
+    [94mUsername[0m: [93mvpnbook[0m
+    [94mPassword[0m: [93mueedn87[0m
+[94m[*][0m [94mRunning: sudo openvpn --client --config /home/yyy/uczelnie/autoopenvpn/uk68_udp25000_25000.ovpn[0m
+[94m[*][0m [94mRoutes to add after connection:[0m
+    1. 192.168.55.0/24 via 192.168.53.1
+    2. 192.168.54.0/24 via 192.168.53.1
+
+2026-07-22 16:09:04 WARNING: file '/tmp/vpnbook_auth_p56gor72.txt' is group or others accessible
+2026-07-22 16:09:04 OpenVPN 2.5.11 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Jul  8 2026
+2026-07-22 16:09:04 library versions: OpenSSL 3.0.2 15 Mar 2022, LZO 2.10
+2026-07-22 16:09:04 WARNING: No server certificate verification method has been enabled.  See http://openvpn.net/howto.html#mitm for more info.
+2026-07-22 16:09:04 TCP/UDP: Preserving recently used remote address: [AF_INET]145.239.255.68:25000
+2026-07-22 16:09:04 Socket Buffers: R=[212992->212992] S=[212992->212992]
+2026-07-22 16:09:04 UDP link local: (not bound)
+2026-07-22 16:09:04 UDP link remote: [AF_INET]145.239.255.68:25000
+2026-07-22 16:09:04 TLS: Initial packet from [AF_INET]145.239.255.68:25000, sid=4e99caea 7bf848ab
+2026-07-22 16:09:04 WARNING: this configuration may cache passwords in memory -- use the auth-nocache option to prevent this
+2026-07-22 16:09:04 VERIFY OK: depth=1, CN=vpnbook.com
+2026-07-22 16:09:04 VERIFY OK: depth=0, CN=server.vpnbook.com
+2026-07-22 16:09:04 Control Channel: TLSv1.3, cipher TLSv1.3 TLS_AES_256_GCM_SHA384, peer certificate: 2048 bit RSA, signature: RSA-SHA256
+2026-07-22 16:09:04 [server.vpnbook.com] Peer Connection Initiated with [AF_INET]145.239.255.68:25000
+2026-07-22 16:09:04 PUSH: Received control message: 'PUSH_REPLY,redirect-gateway def1,dhcp-option DNS 1.1.1.1,dhcp-option DNS 8.8.8.8,block-outside-dns,route 10.102.192.1,topology net30,ping 10,ping-restart 60,ifconfig 10.102.193.170 10.102.193.169,peer-id 106,cipher AES-256-GCM'
+2026-07-22 16:09:04 WARNING: You have specified redirect-gateway and redirect-private at the same time (or the same option multiple times). This is not well supported and may lead to unexpected results
+2026-07-22 16:09:04 Options error: Unrecognized option or missing or extra parameter(s) in [PUSH-OPTIONS]:4: block-outside-dns (2.5.11)
+2026-07-22 16:09:04 OPTIONS IMPORT: timers and/or timeouts modified
+2026-07-22 16:09:04 OPTIONS IMPORT: --ifconfig/up options modified
+2026-07-22 16:09:04 OPTIONS IMPORT: route options modified
+2026-07-22 16:09:04 OPTIONS IMPORT: --ip-win32 and/or --dhcp-option options modified
+2026-07-22 16:09:04 OPTIONS IMPORT: peer-id set
+2026-07-22 16:09:04 OPTIONS IMPORT: adjusting link_mtu to 1624
+2026-07-22 16:09:04 OPTIONS IMPORT: data channel crypto options modified
+2026-07-22 16:09:04 Outgoing Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 16:09:04 Incoming Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 16:09:04 net_route_v4_best_gw query: dst 0.0.0.0
+2026-07-22 16:09:04 net_route_v4_best_gw result: via 192.168.53.1 dev enp2s0
+2026-07-22 16:09:04 ROUTE_GATEWAY 192.168.53.1/255.255.255.0 IFACE=enp2s0 HWADDR=fc:aa:14:7f:fc:78
+2026-07-22 16:09:04 TUN/TAP device tun2 opened
+2026-07-22 16:09:04 net_iface_mtu_set: mtu 1500 for tun2
+2026-07-22 16:09:04 net_iface_up: set tun2 up
+2026-07-22 16:09:04 net_addr_ptp_v4_add: 10.102.193.170 peer 10.102.193.169 dev tun2
+2026-07-22 16:09:06 net_route_v4_add: 145.239.255.68/32 via 192.168.53.1 dev [NULL] table 0 metric -1
+2026-07-22 16:09:06 net_route_v4_add: 0.0.0.0/1 via 10.102.193.169 dev [NULL] table 0 metric -1
+2026-07-22 16:09:06 net_route_v4_add: 128.0.0.0/1 via 10.102.193.169 dev [NULL] table 0 metric -1
+2026-07-22 16:09:06 net_route_v4_add: 10.102.192.1/32 via 10.102.193.169 dev [NULL] table 0 metric -1
+[96m2026-07-22 16:09:06 Initialization Sequence Completed
+[0m[94m[*][0m [94mAdding route: sudo ip route add 192.168.55.0/24 via 192.168.53.1[0m
+[92m[+][0m [92mRoute added: 192.168.55.0/24 via 192.168.53.1[0m
+[94m[*][0m [94mAdding route: sudo ip route add 192.168.54.0/24 via 192.168.53.1[0m
+[92m[+][0m [92mRoute added: 192.168.54.0/24 via 192.168.53.1[0m
+Connecting to VPN... OK
+
+[96m============================================================[0m
+[96m[1m  Connection Info[0m[0m
+[96m============================================================[0m
+
+  [93mTunnel Interface[0m ([96mtun2[0m):
+    [94mLocal IP[0m : [96m10.102.193.170[0m
+    [94mPeer IP [0m : [96m10.102.193.169[0m
+
+  [93mPublic IP (via VPN)[0m: [96m145.239.255.68[0m
+
+============================================================
+
+[94m[*][0m [94mScanning VPNBook for available servers and credentials...[0m
+
+[96m============================================================[0m
+[96m[1m  VPNBook Scan Results[0m[0m
+[96m============================================================[0m
+
+  [1mCredentials:[0m
+    [94mUsername[0m : [93mvpnbook[0m
+    [94mPassword[0m : [93mueedn87[0m
+    Updated  : Jul 18, 2026
+
+  [1mOpenVPN Servers (10):[0m
+    [96mus16[0m  us16.vpnbook.com
+    [96mus178[0m  us178.vpnbook.com
+    [96mca149[0m  ca149.vpnbook.com
+    [96mca196[0m  ca196.vpnbook.com
+    [96muk205[0m  uk205.vpnbook.com
+    [96muk68[0m  uk68.vpnbook.com
+    [96mde20[0m  de20.vpnbook.com
+    [96mde220[0m  de220.vpnbook.com
+    [96mfr200[0m  fr200.vpnbook.com
+    [96mfr231[0m  fr2311.vpnbook.com
+
+  [1mProtocols (4):[0m
+    [93mTCP[0m  443     [96m(tcp443)[0m
+    [93mTCP[0m  80      [96m(tcp80)[0m
+    [93mUDP[0m  53      [96m(udp53)[0m
+    [93mUDP[0m  25000   [96m(udp25000)[0m
+
+============================================================
+
+[94m[*][0m [94mCredentials saved to /tmp/vpnbook_auth_l21deaea.txt[0m
+[94m[*][0m [94mDownloading 1 config(s) from VPNBook...[0m
+
+[94m[uk68] [UDP 25000][0m   [92m[+][0m [92muk68_udp25000_25000.ovpn[0m
+
+[92m[+][0m [92mDone: 1/1 config(s) downloaded successfully.[0m
+
+[94m[*][0m [94mVPN credentials:[0m
+    [94mUsername[0m: [93mvpnbook[0m
+    [94mPassword[0m: [93mueedn87[0m
+[94m[*][0m [94mRunning: sudo openvpn --client --config /home/yyy/uczelnie/autoopenvpn/uk68_udp25000_25000.ovpn[0m
+[94m[*][0m [94mRoutes to add after connection:[0m
+    1. 192.168.55.0/24 via 192.168.53.1
+    2. 192.168.54.0/24 via 192.168.53.1
+
+2026-07-22 16:31:18 WARNING: file '/tmp/vpnbook_auth_l21deaea.txt' is group or others accessible
+2026-07-22 16:31:18 OpenVPN 2.5.11 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Jul  8 2026
+2026-07-22 16:31:18 library versions: OpenSSL 3.0.2 15 Mar 2022, LZO 2.10
+2026-07-22 16:31:18 WARNING: No server certificate verification method has been enabled.  See http://openvpn.net/howto.html#mitm for more info.
+2026-07-22 16:31:18 TCP/UDP: Preserving recently used remote address: [AF_INET]145.239.255.68:25000
+2026-07-22 16:31:18 Socket Buffers: R=[212992->212992] S=[212992->212992]
+2026-07-22 16:31:18 UDP link local: (not bound)
+2026-07-22 16:31:18 UDP link remote: [AF_INET]145.239.255.68:25000
+2026-07-22 16:31:18 TLS: Initial packet from [AF_INET]145.239.255.68:25000, sid=c3591647 6f7d365e
+2026-07-22 16:31:18 WARNING: this configuration may cache passwords in memory -- use the auth-nocache option to prevent this
+2026-07-22 16:31:18 VERIFY OK: depth=1, CN=vpnbook.com
+2026-07-22 16:31:18 VERIFY OK: depth=0, CN=server.vpnbook.com
+2026-07-22 16:31:21 Control Channel: TLSv1.3, cipher TLSv1.3 TLS_AES_256_GCM_SHA384, peer certificate: 2048 bit RSA, signature: RSA-SHA256
+2026-07-22 16:31:21 [server.vpnbook.com] Peer Connection Initiated with [AF_INET]145.239.255.68:25000
+2026-07-22 16:31:21 PUSH: Received control message: 'PUSH_REPLY,redirect-gateway def1,dhcp-option DNS 1.1.1.1,dhcp-option DNS 8.8.8.8,block-outside-dns,route 10.102.192.1,topology net30,ping 10,ping-restart 60,ifconfig 10.102.192.110 10.102.192.109,peer-id 35,cipher AES-256-GCM'
+2026-07-22 16:31:21 WARNING: You have specified redirect-gateway and redirect-private at the same time (or the same option multiple times). This is not well supported and may lead to unexpected results
+2026-07-22 16:31:21 Options error: Unrecognized option or missing or extra parameter(s) in [PUSH-OPTIONS]:4: block-outside-dns (2.5.11)
+2026-07-22 16:31:21 OPTIONS IMPORT: timers and/or timeouts modified
+2026-07-22 16:31:21 OPTIONS IMPORT: --ifconfig/up options modified
+2026-07-22 16:31:21 OPTIONS IMPORT: route options modified
+2026-07-22 16:31:21 OPTIONS IMPORT: --ip-win32 and/or --dhcp-option options modified
+2026-07-22 16:31:21 OPTIONS IMPORT: peer-id set
+2026-07-22 16:31:21 OPTIONS IMPORT: adjusting link_mtu to 1624
+2026-07-22 16:31:21 OPTIONS IMPORT: data channel crypto options modified
+2026-07-22 16:31:21 Outgoing Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 16:31:21 Incoming Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 16:31:21 net_route_v4_best_gw query: dst 0.0.0.0
+2026-07-22 16:31:21 net_route_v4_best_gw result: via 192.168.53.1 dev enp2s0
+2026-07-22 16:31:21 ROUTE_GATEWAY 192.168.53.1/255.255.255.0 IFACE=enp2s0 HWADDR=fc:aa:14:7f:fc:78
+2026-07-22 16:31:21 TUN/TAP device tun2 opened
+2026-07-22 16:31:21 net_iface_mtu_set: mtu 1500 for tun2
+2026-07-22 16:31:21 net_iface_up: set tun2 up
+2026-07-22 16:31:21 net_addr_ptp_v4_add: 10.102.192.110 peer 10.102.192.109 dev tun2
+2026-07-22 16:31:23 net_route_v4_add: 145.239.255.68/32 via 192.168.53.1 dev [NULL] table 0 metric -1
+2026-07-22 16:31:23 net_route_v4_add: 0.0.0.0/1 via 10.102.192.109 dev [NULL] table 0 metric -1
+2026-07-22 16:31:23 net_route_v4_add: 128.0.0.0/1 via 10.102.192.109 dev [NULL] table 0 metric -1
+2026-07-22 16:31:23 net_route_v4_add: 10.102.192.1/32 via 10.102.192.109 dev [NULL] table 0 metric -1
+[96m2026-07-22 16:31:23 Initialization Sequence Completed
+[0m[94m[*][0m [94mAdding route: sudo ip route add 192.168.55.0/24 via 192.168.53.1[0m
+[92m[+][0m [92mRoute added: 192.168.55.0/24 via 192.168.53.1[0m
+[94m[*][0m [94mAdding route: sudo ip route add 192.168.54.0/24 via 192.168.53.1[0m
+[92m[+][0m [92mRoute added: 192.168.54.0/24 via 192.168.53.1[0m
+
+[96m============================================================[0m
+[96m[1m  Connection Info[0m[0m
+[96m============================================================[0m
+
+  [93mTunnel Interface[0m ([96mtun2[0m):
+    [94mLocal IP[0m : [96m10.102.192.110[0m
+    [94mPeer IP [0m : [96m10.102.192.109[0m
+
+  [93mPublic IP (via VPN)[0m: [96m145.239.255.68[0m
+
+============================================================
+
+
+[94m[*][0m [94mOpenVPN terminated by user.[0m
+2026-07-22 16:34:54 event_wait : Interrupted system call (code=4)
+2026-07-22 16:34:54 net_route_v4_del: 10.102.192.1/32 via 10.102.192.109 dev [NULL] table 0 metric -1
+2026-07-22 16:34:54 net_route_v4_del: 145.239.255.68/32 via 192.168.53.1 dev [NULL] table 0 metric -1
+2026-07-22 16:34:54 net_route_v4_del: 0.0.0.0/1 via 10.102.192.109 dev [NULL] table 0 metric -1
+2026-07-22 16:34:54 net_route_v4_del: 128.0.0.0/1 via 10.102.192.109 dev [NULL] table 0 metric -1
+2026-07-22 16:34:54 Closing TUN/TAP interface
+2026-07-22 16:34:54 net_addr_ptp_v4_del: 10.102.192.110 dev tun2
+2026-07-22 16:34:54 SIGTERM[hard,] received, process exiting
+[94m[*][0m [94mRemoving route: sudo ip route del 192.168.54.0/24 via 192.168.53.1[0m
+[93m[-][0m [93mRoute removed: 192.168.54.0/24 via 192.168.53.1[0m
+[94m[*][0m [94mRemoving route: sudo ip route del 192.168.55.0/24 via 192.168.53.1[0m
+[93m[-][0m [93mRoute removed: 192.168.55.0/24 via 192.168.53.1[0m
+[94m[*][0m [94mTemp auth file /tmp/vpnbook_auth_l21deaea.txt removed.[0m
+Connecting to VPN...[94m[*][0m [94mScanning VPNBook for available servers and credentials...[0m
+
+[96m============================================================[0m
+[96m[1m  VPNBook Scan Results[0m[0m
+[96m============================================================[0m
+
+  [1mCredentials:[0m
+    [94mUsername[0m : [93mvpnbook[0m
+    [94mPassword[0m : [93mueedn87[0m
+    Updated  : Jul 18, 2026
+
+  [1mOpenVPN Servers (10):[0m
+    [96mus16[0m  us16.vpnbook.com
+    [96mus178[0m  us178.vpnbook.com
+    [96mca149[0m  ca149.vpnbook.com
+    [96mca196[0m  ca196.vpnbook.com
+    [96muk205[0m  uk205.vpnbook.com
+    [96muk68[0m  uk68.vpnbook.com
+    [96mde20[0m  de20.vpnbook.com
+    [96mde220[0m  de220.vpnbook.com
+    [96mfr200[0m  fr200.vpnbook.com
+    [96mfr231[0m  fr2311.vpnbook.com
+
+  [1mProtocols (4):[0m
+    [93mTCP[0m  443     [96m(tcp443)[0m
+    [93mTCP[0m  80      [96m(tcp80)[0m
+    [93mUDP[0m  53      [96m(udp53)[0m
+    [93mUDP[0m  25000   [96m(udp25000)[0m
+
+============================================================
+
+[94m[*][0m [94mCredentials saved to /tmp/vpnbook_auth_ru_xmt6l.txt[0m
+[94m[*][0m [94mDownloading 1 config(s) from VPNBook...[0m
+
+[94m[uk68] [UDP 25000][0m   [92m[+][0m [92muk68_udp25000_25000.ovpn[0m
+
+[92m[+][0m [92mDone: 1/1 config(s) downloaded successfully.[0m
+
+[94m[*][0m [94mVPN credentials:[0m
+    [94mUsername[0m: [93mvpnbook[0m
+    [94mPassword[0m: [93mueedn87[0m
+[94m[*][0m [94mRunning: sudo openvpn --client --config /home/yyy/uczelnie/autoopenvpn/uk68_udp25000_25000.ovpn[0m
+[94m[*][0m [94mRoutes to add after connection:[0m
+    1. 192.168.55.0/24 via 192.168.53.1
+    2. 192.168.54.0/24 via 192.168.53.1
+
+2026-07-22 16:35:20 WARNING: file '/tmp/vpnbook_auth_ru_xmt6l.txt' is group or others accessible
+2026-07-22 16:35:20 OpenVPN 2.5.11 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Jul  8 2026
+2026-07-22 16:35:20 library versions: OpenSSL 3.0.2 15 Mar 2022, LZO 2.10
+2026-07-22 16:35:20 WARNING: No server certificate verification method has been enabled.  See http://openvpn.net/howto.html#mitm for more info.
+2026-07-22 16:35:20 TCP/UDP: Preserving recently used remote address: [AF_INET]145.239.255.68:25000
+2026-07-22 16:35:20 Socket Buffers: R=[212992->212992] S=[212992->212992]
+2026-07-22 16:35:20 UDP link local: (not bound)
+2026-07-22 16:35:20 UDP link remote: [AF_INET]145.239.255.68:25000
+2026-07-22 16:35:20 TLS: Initial packet from [AF_INET]145.239.255.68:25000, sid=a0cb48d0 b264dd5a
+2026-07-22 16:35:20 WARNING: this configuration may cache passwords in memory -- use the auth-nocache option to prevent this
+2026-07-22 16:35:20 VERIFY OK: depth=1, CN=vpnbook.com
+2026-07-22 16:35:20 VERIFY OK: depth=0, CN=server.vpnbook.com
+2026-07-22 16:35:20 Control Channel: TLSv1.3, cipher TLSv1.3 TLS_AES_256_GCM_SHA384, peer certificate: 2048 bit RSA, signature: RSA-SHA256
+2026-07-22 16:35:20 [server.vpnbook.com] Peer Connection Initiated with [AF_INET]145.239.255.68:25000
+2026-07-22 16:35:20 PUSH: Received control message: 'PUSH_REPLY,redirect-gateway def1,dhcp-option DNS 1.1.1.1,dhcp-option DNS 8.8.8.8,block-outside-dns,route 10.102.192.1,topology net30,ping 10,ping-restart 60,ifconfig 10.102.193.14 10.102.193.13,peer-id 47,cipher AES-256-GCM'
+2026-07-22 16:35:20 WARNING: You have specified redirect-gateway and redirect-private at the same time (or the same option multiple times). This is not well supported and may lead to unexpected results
+2026-07-22 16:35:20 Options error: Unrecognized option or missing or extra parameter(s) in [PUSH-OPTIONS]:4: block-outside-dns (2.5.11)
+2026-07-22 16:35:20 OPTIONS IMPORT: timers and/or timeouts modified
+2026-07-22 16:35:20 OPTIONS IMPORT: --ifconfig/up options modified
+2026-07-22 16:35:20 OPTIONS IMPORT: route options modified
+2026-07-22 16:35:20 OPTIONS IMPORT: --ip-win32 and/or --dhcp-option options modified
+2026-07-22 16:35:20 OPTIONS IMPORT: peer-id set
+2026-07-22 16:35:20 OPTIONS IMPORT: adjusting link_mtu to 1624
+2026-07-22 16:35:20 OPTIONS IMPORT: data channel crypto options modified
+2026-07-22 16:35:20 Outgoing Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 16:35:20 Incoming Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 16:35:20 net_route_v4_best_gw query: dst 0.0.0.0
+2026-07-22 16:35:20 net_route_v4_best_gw result: via 192.168.53.1 dev enp2s0
+2026-07-22 16:35:20 ROUTE_GATEWAY 192.168.53.1/255.255.255.0 IFACE=enp2s0 HWADDR=fc:aa:14:7f:fc:78
+2026-07-22 16:35:20 TUN/TAP device tun2 opened
+2026-07-22 16:35:20 net_iface_mtu_set: mtu 1500 for tun2
+2026-07-22 16:35:20 net_iface_up: set tun2 up
+2026-07-22 16:35:20 net_addr_ptp_v4_add: 10.102.193.14 peer 10.102.193.13 dev tun2
+2026-07-22 16:35:22 net_route_v4_add: 145.239.255.68/32 via 192.168.53.1 dev [NULL] table 0 metric -1
+2026-07-22 16:35:22 net_route_v4_add: 0.0.0.0/1 via 10.102.193.13 dev [NULL] table 0 metric -1
+2026-07-22 16:35:22 net_route_v4_add: 128.0.0.0/1 via 10.102.193.13 dev [NULL] table 0 metric -1
+2026-07-22 16:35:22 net_route_v4_add: 10.102.192.1/32 via 10.102.193.13 dev [NULL] table 0 metric -1
+[96m2026-07-22 16:35:22 Initialization Sequence Completed
+[0m[94m[*][0m [94mAdding route: sudo ip route add 192.168.55.0/24 via 192.168.53.1[0m
+[92m[+][0m [92mRoute added: 192.168.55.0/24 via 192.168.53.1[0m
+[94m[*][0m [94mAdding route: sudo ip route add 192.168.54.0/24 via 192.168.53.1[0m
+[92m[+][0m [92mRoute added: 192.168.54.0/24 via 192.168.53.1[0m
+Connecting to VPN... OK
+
+[96m============================================================[0m
+[96m[1m  Connection Info[0m[0m
+[96m============================================================[0m
+
+  [93mTunnel Interface[0m ([96mtun2[0m):
+    [94mLocal IP[0m : [96m10.102.193.14[0m
+    [94mPeer IP [0m : [96m10.102.193.13[0m
+
+  [93mPublic IP (via VPN)[0m: [96m145.239.255.68[0m
+
+============================================================
+
+Connecting to VPN...[94m[*][0m [94mScanning VPNBook for available servers and credentials...[0m
+
+[96m============================================================[0m
+[96m[1m  VPNBook Scan Results[0m[0m
+[96m============================================================[0m
+
+  [1mCredentials:[0m
+    [94mUsername[0m : [93mvpnbook[0m
+    [94mPassword[0m : [93mueedn87[0m
+    Updated  : Jul 18, 2026
+
+  [1mOpenVPN Servers (10):[0m
+    [96mus16[0m  us16.vpnbook.com
+    [96mus178[0m  us178.vpnbook.com
+    [96mca149[0m  ca149.vpnbook.com
+    [96mca196[0m  ca196.vpnbook.com
+    [96muk205[0m  uk205.vpnbook.com
+    [96muk68[0m  uk68.vpnbook.com
+    [96mde20[0m  de20.vpnbook.com
+    [96mde220[0m  de220.vpnbook.com
+    [96mfr200[0m  fr200.vpnbook.com
+    [96mfr231[0m  fr2311.vpnbook.com
+
+  [1mProtocols (4):[0m
+    [93mTCP[0m  443     [96m(tcp443)[0m
+    [93mTCP[0m  80      [96m(tcp80)[0m
+    [93mUDP[0m  53      [96m(udp53)[0m
+    [93mUDP[0m  25000   [96m(udp25000)[0m
+
+============================================================
+
+[94m[*][0m [94mCredentials saved to /tmp/vpnbook_auth_j9mel6tx.txt[0m
+[94m[*][0m [94mDownloading 1 config(s) from VPNBook...[0m
+
+[94m[uk68] [UDP 25000][0m   [92m[+][0m [92muk68_udp25000_25000.ovpn[0m
+
+[92m[+][0m [92mDone: 1/1 config(s) downloaded successfully.[0m
+
+[94m[*][0m [94mVPN credentials:[0m
+    [94mUsername[0m: [93mvpnbook[0m
+    [94mPassword[0m: [93mueedn87[0m
+[91m[!][0m [91mAnother OpenVPN instance is already running. Use '--kill' first or stop it manually.[0m
+Connecting to VPN... FAILED
+[94m[*][0m [94mScanning VPNBook for available servers and credentials...[0m
+
+[96m============================================================[0m
+[96m[1m  VPNBook Scan Results[0m[0m
+[96m============================================================[0m
+
+  [1mCredentials:[0m
+    [94mUsername[0m : [93mvpnbook[0m
+    [94mPassword[0m : [93mueedn87[0m
+    Updated  : Jul 18, 2026
+
+  [1mOpenVPN Servers (10):[0m
+    [96mus16[0m  us16.vpnbook.com
+    [96mus178[0m  us178.vpnbook.com
+    [96mca149[0m  ca149.vpnbook.com
+    [96mca196[0m  ca196.vpnbook.com
+    [96muk205[0m  uk205.vpnbook.com
+    [96muk68[0m  uk68.vpnbook.com
+    [96mde20[0m  de20.vpnbook.com
+    [96mde220[0m  de220.vpnbook.com
+    [96mfr200[0m  fr200.vpnbook.com
+    [96mfr231[0m  fr2311.vpnbook.com
+
+  [1mProtocols (4):[0m
+    [93mTCP[0m  443     [96m(tcp443)[0m
+    [93mTCP[0m  80      [96m(tcp80)[0m
+    [93mUDP[0m  53      [96m(udp53)[0m
+    [93mUDP[0m  25000   [96m(udp25000)[0m
+
+============================================================
+
+[94m[*][0m [94mCredentials saved to /tmp/vpnbook_auth_wmx3al8q.txt[0m
+[94m[*][0m [94mDownloading 1 config(s) from VPNBook...[0m
+
+[94m[uk68] [UDP 25000][0m   [92m[+][0m [92muk68_udp25000_25000.ovpn[0m
+
+[92m[+][0m [92mDone: 1/1 config(s) downloaded successfully.[0m
+
+[94m[*][0m [94mVPN credentials:[0m
+    [94mUsername[0m: [93mvpnbook[0m
+    [94mPassword[0m: [93mueedn87[0m
+[94m[*][0m [94mRunning: sudo openvpn --client --config /home/yyy/uczelnie/autoopenvpn/uk68_udp25000_25000.ovpn[0m
+[94m[*][0m [94mRoutes to add after connection:[0m
+    1. 192.168.55.0/24 via 192.168.53.1
+    2. 192.168.54.0/24 via 192.168.53.1
+
+2026-07-22 16:43:56 WARNING: file '/tmp/vpnbook_auth_wmx3al8q.txt' is group or others accessible
+2026-07-22 16:43:56 OpenVPN 2.5.11 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Jul  8 2026
+2026-07-22 16:43:56 library versions: OpenSSL 3.0.2 15 Mar 2022, LZO 2.10
+2026-07-22 16:43:56 WARNING: No server certificate verification method has been enabled.  See http://openvpn.net/howto.html#mitm for more info.
+2026-07-22 16:43:56 TCP/UDP: Preserving recently used remote address: [AF_INET]145.239.255.68:25000
+2026-07-22 16:43:56 Socket Buffers: R=[212992->212992] S=[212992->212992]
+2026-07-22 16:43:56 UDP link local: (not bound)
+2026-07-22 16:43:56 UDP link remote: [AF_INET]145.239.255.68:25000
+2026-07-22 16:43:56 TLS: Initial packet from [AF_INET]145.239.255.68:25000, sid=a4a6b3b0 8e7c63f5
+2026-07-22 16:43:56 WARNING: this configuration may cache passwords in memory -- use the auth-nocache option to prevent this
+2026-07-22 16:43:56 VERIFY OK: depth=1, CN=vpnbook.com
+2026-07-22 16:43:56 VERIFY OK: depth=0, CN=server.vpnbook.com
+2026-07-22 16:43:56 Control Channel: TLSv1.3, cipher TLSv1.3 TLS_AES_256_GCM_SHA384, peer certificate: 2048 bit RSA, signature: RSA-SHA256
+2026-07-22 16:43:56 [server.vpnbook.com] Peer Connection Initiated with [AF_INET]145.239.255.68:25000
+2026-07-22 16:43:56 PUSH: Received control message: 'PUSH_REPLY,redirect-gateway def1,dhcp-option DNS 1.1.1.1,dhcp-option DNS 8.8.8.8,block-outside-dns,route 10.102.192.1,topology net30,ping 10,ping-restart 60,ifconfig 10.102.192.146 10.102.192.145,peer-id 16,cipher AES-256-GCM'
+2026-07-22 16:43:56 WARNING: You have specified redirect-gateway and redirect-private at the same time (or the same option multiple times). This is not well supported and may lead to unexpected results
+2026-07-22 16:43:56 Options error: Unrecognized option or missing or extra parameter(s) in [PUSH-OPTIONS]:4: block-outside-dns (2.5.11)
+2026-07-22 16:43:56 OPTIONS IMPORT: timers and/or timeouts modified
+2026-07-22 16:43:56 OPTIONS IMPORT: --ifconfig/up options modified
+2026-07-22 16:43:56 OPTIONS IMPORT: route options modified
+2026-07-22 16:43:56 OPTIONS IMPORT: --ip-win32 and/or --dhcp-option options modified
+2026-07-22 16:43:56 OPTIONS IMPORT: peer-id set
+2026-07-22 16:43:56 OPTIONS IMPORT: adjusting link_mtu to 1624
+2026-07-22 16:43:56 OPTIONS IMPORT: data channel crypto options modified
+2026-07-22 16:43:56 Outgoing Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 16:43:56 Incoming Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 16:43:56 net_route_v4_best_gw query: dst 0.0.0.0
+2026-07-22 16:43:56 net_route_v4_best_gw result: via 192.168.53.1 dev enp2s0
+2026-07-22 16:43:56 ROUTE_GATEWAY 192.168.53.1/255.255.255.0 IFACE=enp2s0 HWADDR=fc:aa:14:7f:fc:78
+2026-07-22 16:43:56 TUN/TAP device tun2 opened
+2026-07-22 16:43:56 net_iface_mtu_set: mtu 1500 for tun2
+2026-07-22 16:43:56 net_iface_up: set tun2 up
+2026-07-22 16:43:56 net_addr_ptp_v4_add: 10.102.192.146 peer 10.102.192.145 dev tun2
+2026-07-22 16:43:58 net_route_v4_add: 145.239.255.68/32 via 192.168.53.1 dev [NULL] table 0 metric -1
+2026-07-22 16:43:58 net_route_v4_add: 0.0.0.0/1 via 10.102.192.145 dev [NULL] table 0 metric -1
+2026-07-22 16:43:58 net_route_v4_add: 128.0.0.0/1 via 10.102.192.145 dev [NULL] table 0 metric -1
+2026-07-22 16:43:58 net_route_v4_add: 10.102.192.1/32 via 10.102.192.145 dev [NULL] table 0 metric -1
+[96m2026-07-22 16:43:58 Initialization Sequence Completed
+[0m[94m[*][0m [94mAdding route: sudo ip route add 192.168.55.0/24 via 192.168.53.1[0m
+[92m[+][0m [92mRoute added: 192.168.55.0/24 via 192.168.53.1[0m
+[94m[*][0m [94mAdding route: sudo ip route add 192.168.54.0/24 via 192.168.53.1[0m
+[92m[+][0m [92mRoute added: 192.168.54.0/24 via 192.168.53.1[0m
+
+[96m============================================================[0m
+[96m[1m  Connection Info[0m[0m
+[96m============================================================[0m
+
+  [93mTunnel Interface[0m ([96mtun2[0m):
+    [94mLocal IP[0m : [96m10.102.192.146[0m
+    [94mPeer IP [0m : [96m10.102.192.145[0m
+
+  [93mPublic IP (via VPN)[0m: [96m145.239.255.68[0m
+
+============================================================
+
+
+[94m[*][0m [94mOpenVPN terminated by user.[0m
+2026-07-22 16:46:30 event_wait : Interrupted system call (code=4)
+2026-07-22 16:46:30 net_route_v4_del: 10.102.192.1/32 via 10.102.192.145 dev [NULL] table 0 metric -1
+2026-07-22 16:46:30 net_route_v4_del: 145.239.255.68/32 via 192.168.53.1 dev [NULL] table 0 metric -1
+2026-07-22 16:46:30 net_route_v4_del: 0.0.0.0/1 via 10.102.192.145 dev [NULL] table 0 metric -1
+2026-07-22 16:46:30 net_route_v4_del: 128.0.0.0/1 via 10.102.192.145 dev [NULL] table 0 metric -1
+2026-07-22 16:46:30 Closing TUN/TAP interface
+2026-07-22 16:46:30 net_addr_ptp_v4_del: 10.102.192.146 dev tun2
+2026-07-22 16:46:30 SIGTERM[hard,] received, process exiting
+[94m[*][0m [94mRemoving route: sudo ip route del 192.168.54.0/24 via 192.168.53.1[0m
+[93m[-][0m [93mRoute removed: 192.168.54.0/24 via 192.168.53.1[0m
+[94m[*][0m [94mRemoving route: sudo ip route del 192.168.55.0/24 via 192.168.53.1[0m
+[93m[-][0m [93mRoute removed: 192.168.55.0/24 via 192.168.53.1[0m
+[94m[*][0m [94mTemp auth file /tmp/vpnbook_auth_wmx3al8q.txt removed.[0m
+Connecting to VPN...[94m[*][0m [94mScanning VPNBook for available servers and credentials...[0m
+
+[96m============================================================[0m
+[96m[1m  VPNBook Scan Results[0m[0m
+[96m============================================================[0m
+
+  [1mCredentials:[0m
+    [94mUsername[0m : [93mvpnbook[0m
+    [94mPassword[0m : [93mueedn87[0m
+    Updated  : Jul 18, 2026
+
+  [1mOpenVPN Servers (10):[0m
+    [96mus16[0m  us16.vpnbook.com
+    [96mus178[0m  us178.vpnbook.com
+    [96mca149[0m  ca149.vpnbook.com
+    [96mca196[0m  ca196.vpnbook.com
+    [96muk205[0m  uk205.vpnbook.com
+    [96muk68[0m  uk68.vpnbook.com
+    [96mde20[0m  de20.vpnbook.com
+    [96mde220[0m  de220.vpnbook.com
+    [96mfr200[0m  fr200.vpnbook.com
+    [96mfr231[0m  fr2311.vpnbook.com
+
+  [1mProtocols (4):[0m
+    [93mTCP[0m  443     [96m(tcp443)[0m
+    [93mTCP[0m  80      [96m(tcp80)[0m
+    [93mUDP[0m  53      [96m(udp53)[0m
+    [93mUDP[0m  25000   [96m(udp25000)[0m
+
+============================================================
+
+[94m[*][0m [94mCredentials saved to /tmp/vpnbook_auth_3b1nxy2l.txt[0m
+[94m[*][0m [94mDownloading 1 config(s) from VPNBook...[0m
+
+[94m[uk68] [UDP 25000][0m   [92m[+][0m [92muk68_udp25000_25000.ovpn[0m
+
+[92m[+][0m [92mDone: 1/1 config(s) downloaded successfully.[0m
+
+[94m[*][0m [94mVPN credentials:[0m
+    [94mUsername[0m: [93mvpnbook[0m
+    [94mPassword[0m: [93mueedn87[0m
+[94m[*][0m [94mRunning: sudo openvpn --client --config /home/yyy/uczelnie/autoopenvpn/uk68_udp25000_25000.ovpn[0m
+[94m[*][0m [94mRoutes to add after connection:[0m
+    1. 192.168.55.0/24 via 192.168.53.1
+    2. 192.168.54.0/24 via 192.168.53.1
+
+2026-07-22 16:46:58 WARNING: file '/tmp/vpnbook_auth_3b1nxy2l.txt' is group or others accessible
+2026-07-22 16:46:58 OpenVPN 2.5.11 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Jul  8 2026
+2026-07-22 16:46:58 library versions: OpenSSL 3.0.2 15 Mar 2022, LZO 2.10
+2026-07-22 16:46:58 WARNING: No server certificate verification method has been enabled.  See http://openvpn.net/howto.html#mitm for more info.
+2026-07-22 16:46:58 TCP/UDP: Preserving recently used remote address: [AF_INET]145.239.255.68:25000
+2026-07-22 16:46:58 Socket Buffers: R=[212992->212992] S=[212992->212992]
+2026-07-22 16:46:58 UDP link local: (not bound)
+2026-07-22 16:46:58 UDP link remote: [AF_INET]145.239.255.68:25000
+2026-07-22 16:46:58 TLS: Initial packet from [AF_INET]145.239.255.68:25000, sid=ae991f37 d98faa49
+2026-07-22 16:46:58 WARNING: this configuration may cache passwords in memory -- use the auth-nocache option to prevent this
+2026-07-22 16:46:58 VERIFY OK: depth=1, CN=vpnbook.com
+2026-07-22 16:46:58 VERIFY OK: depth=0, CN=server.vpnbook.com
+2026-07-22 16:46:58 Control Channel: TLSv1.3, cipher TLSv1.3 TLS_AES_256_GCM_SHA384, peer certificate: 2048 bit RSA, signature: RSA-SHA256
+2026-07-22 16:46:58 [server.vpnbook.com] Peer Connection Initiated with [AF_INET]145.239.255.68:25000
+2026-07-22 16:46:58 PUSH: Received control message: 'PUSH_REPLY,redirect-gateway def1,dhcp-option DNS 1.1.1.1,dhcp-option DNS 8.8.8.8,block-outside-dns,route 10.102.192.1,topology net30,ping 10,ping-restart 60,ifconfig 10.102.192.82 10.102.192.81,peer-id 33,cipher AES-256-GCM'
+2026-07-22 16:46:58 WARNING: You have specified redirect-gateway and redirect-private at the same time (or the same option multiple times). This is not well supported and may lead to unexpected results
+2026-07-22 16:46:58 Options error: Unrecognized option or missing or extra parameter(s) in [PUSH-OPTIONS]:4: block-outside-dns (2.5.11)
+2026-07-22 16:46:58 OPTIONS IMPORT: timers and/or timeouts modified
+2026-07-22 16:46:58 OPTIONS IMPORT: --ifconfig/up options modified
+2026-07-22 16:46:58 OPTIONS IMPORT: route options modified
+2026-07-22 16:46:58 OPTIONS IMPORT: --ip-win32 and/or --dhcp-option options modified
+2026-07-22 16:46:58 OPTIONS IMPORT: peer-id set
+2026-07-22 16:46:58 OPTIONS IMPORT: adjusting link_mtu to 1624
+2026-07-22 16:46:58 OPTIONS IMPORT: data channel crypto options modified
+2026-07-22 16:46:58 Outgoing Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 16:46:58 Incoming Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 16:46:58 net_route_v4_best_gw query: dst 0.0.0.0
+2026-07-22 16:46:58 net_route_v4_best_gw result: via 192.168.53.1 dev enp2s0
+2026-07-22 16:46:58 ROUTE_GATEWAY 192.168.53.1/255.255.255.0 IFACE=enp2s0 HWADDR=fc:aa:14:7f:fc:78
+2026-07-22 16:46:58 TUN/TAP device tun2 opened
+2026-07-22 16:46:58 net_iface_mtu_set: mtu 1500 for tun2
+2026-07-22 16:46:58 net_iface_up: set tun2 up
+2026-07-22 16:46:58 net_addr_ptp_v4_add: 10.102.192.82 peer 10.102.192.81 dev tun2
+2026-07-22 16:47:00 net_route_v4_add: 145.239.255.68/32 via 192.168.53.1 dev [NULL] table 0 metric -1
+2026-07-22 16:47:00 net_route_v4_add: 0.0.0.0/1 via 10.102.192.81 dev [NULL] table 0 metric -1
+2026-07-22 16:47:00 net_route_v4_add: 128.0.0.0/1 via 10.102.192.81 dev [NULL] table 0 metric -1
+2026-07-22 16:47:00 net_route_v4_add: 10.102.192.1/32 via 10.102.192.81 dev [NULL] table 0 metric -1
+[96m2026-07-22 16:47:00 Initialization Sequence Completed
+[0m[94m[*][0m [94mAdding route: sudo ip route add 192.168.55.0/24 via 192.168.53.1[0m
+Connecting to VPN... OK
+[92m[+][0m [92mRoute added: 192.168.55.0/24 via 192.168.53.1[0m
+[94m[*][0m [94mAdding route: sudo ip route add 192.168.54.0/24 via 192.168.53.1[0m
+[92m[+][0m [92mRoute added: 192.168.54.0/24 via 192.168.53.1[0m
+
+[96m============================================================[0m
+[96m[1m  Connection Info[0m[0m
+[96m============================================================[0m
+
+  [93mTunnel Interface[0m ([96mtun2[0m):
+    [94mLocal IP[0m : [96m10.102.192.82[0m
+    [94mPeer IP [0m : [96m10.102.192.81[0m
+
+  [93mPublic IP (via VPN)[0m: [96m145.239.255.68[0m
+
+============================================================
+
+Connecting to VPN...[94m[*][0m [94mScanning VPNBook for available servers and credentials...[0m
+
+[96m============================================================[0m
+[96m[1m  VPNBook Scan Results[0m[0m
+[96m============================================================[0m
+
+  [1mCredentials:[0m
+    [94mUsername[0m : [93mvpnbook[0m
+    [94mPassword[0m : [93mueedn87[0m
+    Updated  : Jul 18, 2026
+
+  [1mOpenVPN Servers (10):[0m
+    [96mus16[0m  us16.vpnbook.com
+    [96mus178[0m  us178.vpnbook.com
+    [96mca149[0m  ca149.vpnbook.com
+    [96mca196[0m  ca196.vpnbook.com
+    [96muk205[0m  uk205.vpnbook.com
+    [96muk68[0m  uk68.vpnbook.com
+    [96mde20[0m  de20.vpnbook.com
+    [96mde220[0m  de220.vpnbook.com
+    [96mfr200[0m  fr200.vpnbook.com
+    [96mfr231[0m  fr2311.vpnbook.com
+
+  [1mProtocols (4):[0m
+    [93mTCP[0m  443     [96m(tcp443)[0m
+    [93mTCP[0m  80      [96m(tcp80)[0m
+    [93mUDP[0m  53      [96m(udp53)[0m
+    [93mUDP[0m  25000   [96m(udp25000)[0m
+
+============================================================
+
+[94m[*][0m [94mCredentials saved to /tmp/vpnbook_auth_mgvjax8h.txt[0m
+[94m[*][0m [94mDownloading 1 config(s) from VPNBook...[0m
+
+[94m[uk68] [UDP 25000][0m   [92m[+][0m [92muk68_udp25000_25000.ovpn[0m
+
+[92m[+][0m [92mDone: 1/1 config(s) downloaded successfully.[0m
+
+[94m[*][0m [94mVPN credentials:[0m
+    [94mUsername[0m: [93mvpnbook[0m
+    [94mPassword[0m: [93mueedn87[0m
+[94m[*][0m [94mRunning: sudo openvpn --client --config /home/yyy/uczelnie/autoopenvpn/uk68_udp25000_25000.ovpn[0m
+[94m[*][0m [94mRoutes to add after connection:[0m
+    1. 192.168.55.0/24 via 192.168.53.1
+    2. 192.168.54.0/24 via 192.168.53.1
+
+2026-07-22 16:48:31 WARNING: file '/tmp/vpnbook_auth_mgvjax8h.txt' is group or others accessible
+2026-07-22 16:48:31 OpenVPN 2.5.11 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Jul  8 2026
+2026-07-22 16:48:31 library versions: OpenSSL 3.0.2 15 Mar 2022, LZO 2.10
+2026-07-22 16:48:31 WARNING: No server certificate verification method has been enabled.  See http://openvpn.net/howto.html#mitm for more info.
+2026-07-22 16:48:31 TCP/UDP: Preserving recently used remote address: [AF_INET]145.239.255.68:25000
+2026-07-22 16:48:31 Socket Buffers: R=[212992->212992] S=[212992->212992]
+2026-07-22 16:48:31 UDP link local: (not bound)
+2026-07-22 16:48:31 UDP link remote: [AF_INET]145.239.255.68:25000
+2026-07-22 16:48:31 TLS: Initial packet from [AF_INET]145.239.255.68:25000, sid=8654b4ca 909cfed0
+2026-07-22 16:48:31 WARNING: this configuration may cache passwords in memory -- use the auth-nocache option to prevent this
+2026-07-22 16:48:31 VERIFY OK: depth=1, CN=vpnbook.com
+2026-07-22 16:48:31 VERIFY OK: depth=0, CN=server.vpnbook.com
+2026-07-22 16:48:32 Control Channel: TLSv1.3, cipher TLSv1.3 TLS_AES_256_GCM_SHA384, peer certificate: 2048 bit RSA, signature: RSA-SHA256
+2026-07-22 16:48:32 [server.vpnbook.com] Peer Connection Initiated with [AF_INET]145.239.255.68:25000
+2026-07-22 16:48:32 PUSH: Received control message: 'PUSH_REPLY,redirect-gateway def1,dhcp-option DNS 1.1.1.1,dhcp-option DNS 8.8.8.8,block-outside-dns,route 10.102.192.1,topology net30,ping 10,ping-restart 60,ifconfig 10.102.192.110 10.102.192.109,peer-id 16,cipher AES-256-GCM'
+2026-07-22 16:48:32 WARNING: You have specified redirect-gateway and redirect-private at the same time (or the same option multiple times). This is not well supported and may lead to unexpected results
+2026-07-22 16:48:32 Options error: Unrecognized option or missing or extra parameter(s) in [PUSH-OPTIONS]:4: block-outside-dns (2.5.11)
+2026-07-22 16:48:32 OPTIONS IMPORT: timers and/or timeouts modified
+2026-07-22 16:48:32 OPTIONS IMPORT: --ifconfig/up options modified
+2026-07-22 16:48:32 OPTIONS IMPORT: route options modified
+2026-07-22 16:48:32 OPTIONS IMPORT: --ip-win32 and/or --dhcp-option options modified
+2026-07-22 16:48:32 OPTIONS IMPORT: peer-id set
+2026-07-22 16:48:32 OPTIONS IMPORT: adjusting link_mtu to 1624
+2026-07-22 16:48:32 OPTIONS IMPORT: data channel crypto options modified
+2026-07-22 16:48:32 Outgoing Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 16:48:32 Incoming Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 16:48:32 net_route_v4_best_gw query: dst 0.0.0.0
+2026-07-22 16:48:32 net_route_v4_best_gw result: via 192.168.53.1 dev enp2s0
+2026-07-22 16:48:32 ROUTE_GATEWAY 192.168.53.1/255.255.255.0 IFACE=enp2s0 HWADDR=fc:aa:14:7f:fc:78
+2026-07-22 16:48:32 TUN/TAP device tun2 opened
+2026-07-22 16:48:32 net_iface_mtu_set: mtu 1500 for tun2
+2026-07-22 16:48:32 net_iface_up: set tun2 up
+2026-07-22 16:48:32 net_addr_ptp_v4_add: 10.102.192.110 peer 10.102.192.109 dev tun2
+2026-07-22 16:48:34 net_route_v4_add: 145.239.255.68/32 via 192.168.53.1 dev [NULL] table 0 metric -1
+2026-07-22 16:48:34 net_route_v4_add: 0.0.0.0/1 via 10.102.192.109 dev [NULL] table 0 metric -1
+2026-07-22 16:48:34 net_route_v4_add: 128.0.0.0/1 via 10.102.192.109 dev [NULL] table 0 metric -1
+2026-07-22 16:48:34 net_route_v4_add: 10.102.192.1/32 via 10.102.192.109 dev [NULL] table 0 metric -1
+[96m2026-07-22 16:48:34 Initialization Sequence Completed
+[0m[94m[*][0m [94mAdding route: sudo ip route add 192.168.55.0/24 via 192.168.53.1[0m
+[92m[+][0m [92mRoute added: 192.168.55.0/24 via 192.168.53.1[0m
+[94m[*][0m [94mAdding route: sudo ip route add 192.168.54.0/24 via 192.168.53.1[0m
+Connecting to VPN... OK
+[92m[+][0m [92mRoute added: 192.168.54.0/24 via 192.168.53.1[0m
+
+[96m============================================================[0m
+[96m[1m  Connection Info[0m[0m
+[96m============================================================[0m
+
+  [93mTunnel Interface[0m ([96mtun2[0m):
+    [94mLocal IP[0m : [96m10.102.192.110[0m
+    [94mPeer IP [0m : [96m10.102.192.109[0m
+
+  [93mPublic IP (via VPN)[0m: [96m145.239.255.68[0m
+
+============================================================
+
+Connecting to VPN...[94m[*][0m [94mScanning VPNBook for available servers and credentials...[0m
+
+[96m============================================================[0m
+[96m[1m  VPNBook Scan Results[0m[0m
+[96m============================================================[0m
+
+  [1mCredentials:[0m
+    [94mUsername[0m : [93mvpnbook[0m
+    [94mPassword[0m : [93mueedn87[0m
+    Updated  : Jul 18, 2026
+
+  [1mOpenVPN Servers (10):[0m
+    [96mus16[0m  us16.vpnbook.com
+    [96mus178[0m  us178.vpnbook.com
+    [96mca149[0m  ca149.vpnbook.com
+    [96mca196[0m  ca196.vpnbook.com
+    [96muk205[0m  uk205.vpnbook.com
+    [96muk68[0m  uk68.vpnbook.com
+    [96mde20[0m  de20.vpnbook.com
+    [96mde220[0m  de220.vpnbook.com
+    [96mfr200[0m  fr200.vpnbook.com
+    [96mfr231[0m  fr2311.vpnbook.com
+
+  [1mProtocols (4):[0m
+    [93mTCP[0m  443     [96m(tcp443)[0m
+    [93mTCP[0m  80      [96m(tcp80)[0m
+    [93mUDP[0m  53      [96m(udp53)[0m
+    [93mUDP[0m  25000   [96m(udp25000)[0m
+
+============================================================
+
+[94m[*][0m [94mCredentials saved to /tmp/vpnbook_auth_icvt445e.txt[0m
+[94m[*][0m [94mDownloading 1 config(s) from VPNBook...[0m
+
+[94m[uk68] [UDP 25000][0m   [92m[+][0m [92muk68_udp25000_25000.ovpn[0m
+
+[92m[+][0m [92mDone: 1/1 config(s) downloaded successfully.[0m
+
+[94m[*][0m [94mVPN credentials:[0m
+    [94mUsername[0m: [93mvpnbook[0m
+    [94mPassword[0m: [93mueedn87[0m
+[94m[*][0m [94mRunning: sudo openvpn --client --config /home/yyy/uczelnie/autoopenvpn/uk68_udp25000_25000.ovpn[0m
+[94m[*][0m [94mRoutes to add after connection:[0m
+    1. 192.168.55.0/24 via 192.168.53.1
+    2. 192.168.54.0/24 via 192.168.53.1
+
+2026-07-22 17:01:46 WARNING: file '/tmp/vpnbook_auth_icvt445e.txt' is group or others accessible
+2026-07-22 17:01:46 OpenVPN 2.5.11 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Jul  8 2026
+2026-07-22 17:01:46 library versions: OpenSSL 3.0.2 15 Mar 2022, LZO 2.10
+2026-07-22 17:01:46 WARNING: No server certificate verification method has been enabled.  See http://openvpn.net/howto.html#mitm for more info.
+2026-07-22 17:01:46 TCP/UDP: Preserving recently used remote address: [AF_INET]145.239.255.68:25000
+2026-07-22 17:01:46 Socket Buffers: R=[212992->212992] S=[212992->212992]
+2026-07-22 17:01:46 UDP link local: (not bound)
+2026-07-22 17:01:46 UDP link remote: [AF_INET]145.239.255.68:25000
+2026-07-22 17:01:46 TLS: Initial packet from [AF_INET]145.239.255.68:25000, sid=2adf821f a661051d
+2026-07-22 17:01:46 WARNING: this configuration may cache passwords in memory -- use the auth-nocache option to prevent this
+2026-07-22 17:01:46 VERIFY OK: depth=1, CN=vpnbook.com
+2026-07-22 17:01:46 VERIFY OK: depth=0, CN=server.vpnbook.com
+2026-07-22 17:01:46 Control Channel: TLSv1.3, cipher TLSv1.3 TLS_AES_256_GCM_SHA384, peer certificate: 2048 bit RSA, signature: RSA-SHA256
+2026-07-22 17:01:46 [server.vpnbook.com] Peer Connection Initiated with [AF_INET]145.239.255.68:25000
+2026-07-22 17:01:46 PUSH: Received control message: 'PUSH_REPLY,redirect-gateway def1,dhcp-option DNS 1.1.1.1,dhcp-option DNS 8.8.8.8,block-outside-dns,route 10.102.192.1,topology net30,ping 10,ping-restart 60,ifconfig 10.102.193.46 10.102.193.45,peer-id 62,cipher AES-256-GCM'
+2026-07-22 17:01:46 WARNING: You have specified redirect-gateway and redirect-private at the same time (or the same option multiple times). This is not well supported and may lead to unexpected results
+2026-07-22 17:01:46 Options error: Unrecognized option or missing or extra parameter(s) in [PUSH-OPTIONS]:4: block-outside-dns (2.5.11)
+2026-07-22 17:01:46 OPTIONS IMPORT: timers and/or timeouts modified
+2026-07-22 17:01:46 OPTIONS IMPORT: --ifconfig/up options modified
+2026-07-22 17:01:46 OPTIONS IMPORT: route options modified
+2026-07-22 17:01:46 OPTIONS IMPORT: --ip-win32 and/or --dhcp-option options modified
+2026-07-22 17:01:46 OPTIONS IMPORT: peer-id set
+2026-07-22 17:01:46 OPTIONS IMPORT: adjusting link_mtu to 1624
+2026-07-22 17:01:46 OPTIONS IMPORT: data channel crypto options modified
+2026-07-22 17:01:46 Outgoing Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 17:01:46 Incoming Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 17:01:46 net_route_v4_best_gw query: dst 0.0.0.0
+2026-07-22 17:01:46 net_route_v4_best_gw result: via 192.168.53.1 dev enp2s0
+2026-07-22 17:01:46 ROUTE_GATEWAY 192.168.53.1/255.255.255.0 IFACE=enp2s0 HWADDR=fc:aa:14:7f:fc:78
+2026-07-22 17:01:46 TUN/TAP device tun2 opened
+2026-07-22 17:01:46 net_iface_mtu_set: mtu 1500 for tun2
+2026-07-22 17:01:46 net_iface_up: set tun2 up
+2026-07-22 17:01:46 net_addr_ptp_v4_add: 10.102.193.46 peer 10.102.193.45 dev tun2
+2026-07-22 17:01:48 net_route_v4_add: 145.239.255.68/32 via 192.168.53.1 dev [NULL] table 0 metric -1
+2026-07-22 17:01:48 net_route_v4_add: 0.0.0.0/1 via 10.102.193.45 dev [NULL] table 0 metric -1
+2026-07-22 17:01:48 net_route_v4_add: 128.0.0.0/1 via 10.102.193.45 dev [NULL] table 0 metric -1
+2026-07-22 17:01:48 net_route_v4_add: 10.102.192.1/32 via 10.102.193.45 dev [NULL] table 0 metric -1
+[96m2026-07-22 17:01:48 Initialization Sequence Completed
+[0m[94m[*][0m [94mAdding route: sudo ip route add 192.168.55.0/24 via 192.168.53.1[0m
+[92m[+][0m [92mRoute added: 192.168.55.0/24 via 192.168.53.1[0m
+[94m[*][0m [94mAdding route: sudo ip route add 192.168.54.0/24 via 192.168.53.1[0m
+[92m[+][0m [92mRoute added: 192.168.54.0/24 via 192.168.53.1[0m
+Connecting to VPN... OK
+
+[96m============================================================[0m
+[96m[1m  Connection Info[0m[0m
+[96m============================================================[0m
+
+  [93mTunnel Interface[0m ([96mtun2[0m):
+    [94mLocal IP[0m : [96m10.102.193.46[0m
+    [94mPeer IP [0m : [96m10.102.193.45[0m
+
+  [93mPublic IP (via VPN)[0m: [96m145.239.255.68[0m
+
+============================================================
+
+[94m[*][0m [94mScanning VPNBook for available servers and credentials...[0m
+
+[96m============================================================[0m
+[96m[1m  VPNBook Scan Results[0m[0m
+[96m============================================================[0m
+
+  [1mCredentials:[0m
+    [94mUsername[0m : [93mvpnbook[0m
+    [94mPassword[0m : [93mueedn87[0m
+    Updated  : Jul 18, 2026
+
+  [1mOpenVPN Servers (10):[0m
+    [96mus16[0m  us16.vpnbook.com
+    [96mus178[0m  us178.vpnbook.com
+    [96mca149[0m  ca149.vpnbook.com
+    [96mca196[0m  ca196.vpnbook.com
+    [96muk205[0m  uk205.vpnbook.com
+    [96muk68[0m  uk68.vpnbook.com
+    [96mde20[0m  de20.vpnbook.com
+    [96mde220[0m  de220.vpnbook.com
+    [96mfr200[0m  fr200.vpnbook.com
+    [96mfr231[0m  fr2311.vpnbook.com
+
+  [1mProtocols (4):[0m
+    [93mTCP[0m  443     [96m(tcp443)[0m
+    [93mTCP[0m  80      [96m(tcp80)[0m
+    [93mUDP[0m  53      [96m(udp53)[0m
+    [93mUDP[0m  25000   [96m(udp25000)[0m
+
+============================================================
+
+[94m[*][0m [94mCredentials saved to /tmp/vpnbook_auth_nz_myq5d.txt[0m
+[94m[*][0m [94mDownloading 1 config(s) from VPNBook...[0m
+
+[94m[uk68] [UDP 25000][0m   [92m[+][0m [92muk68_udp25000_25000.ovpn[0m
+
+[92m[+][0m [92mDone: 1/1 config(s) downloaded successfully.[0m
+
+[94m[*][0m [94mVPN credentials:[0m
+    [94mUsername[0m: [93mvpnbook[0m
+    [94mPassword[0m: [93mueedn87[0m
+[94m[*][0m [94mRunning: sudo openvpn --client --config /home/yyy/uczelnie/autoopenvpn/uk68_udp25000_25000.ovpn[0m
+[94m[*][0m [94mRoutes to add after connection:[0m
+    1. 192.168.55.0/24 via 192.168.53.1
+    2. 192.168.54.0/24 via 192.168.53.1
+
+2026-07-22 17:06:49 WARNING: file '/tmp/vpnbook_auth_nz_myq5d.txt' is group or others accessible
+2026-07-22 17:06:49 OpenVPN 2.5.11 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Jul  8 2026
+2026-07-22 17:06:49 library versions: OpenSSL 3.0.2 15 Mar 2022, LZO 2.10
+2026-07-22 17:06:49 WARNING: No server certificate verification method has been enabled.  See http://openvpn.net/howto.html#mitm for more info.
+2026-07-22 17:06:50 TCP/UDP: Preserving recently used remote address: [AF_INET]145.239.255.68:25000
+2026-07-22 17:06:50 Socket Buffers: R=[212992->212992] S=[212992->212992]
+2026-07-22 17:06:50 UDP link local: (not bound)
+2026-07-22 17:06:50 UDP link remote: [AF_INET]145.239.255.68:25000
+2026-07-22 17:06:50 TLS: Initial packet from [AF_INET]145.239.255.68:25000, sid=512c13da 2fdaf29c
+2026-07-22 17:06:50 WARNING: this configuration may cache passwords in memory -- use the auth-nocache option to prevent this
+2026-07-22 17:06:50 VERIFY OK: depth=1, CN=vpnbook.com
+2026-07-22 17:06:50 VERIFY OK: depth=0, CN=server.vpnbook.com
+2026-07-22 17:06:50 Control Channel: TLSv1.3, cipher TLSv1.3 TLS_AES_256_GCM_SHA384, peer certificate: 2048 bit RSA, signature: RSA-SHA256
+2026-07-22 17:06:50 [server.vpnbook.com] Peer Connection Initiated with [AF_INET]145.239.255.68:25000
+2026-07-22 17:06:50 PUSH: Received control message: 'PUSH_REPLY,redirect-gateway def1,dhcp-option DNS 1.1.1.1,dhcp-option DNS 8.8.8.8,block-outside-dns,route 10.102.192.1,topology net30,ping 10,ping-restart 60,ifconfig 10.102.192.158 10.102.192.157,peer-id 30,cipher AES-256-GCM'
+2026-07-22 17:06:50 WARNING: You have specified redirect-gateway and redirect-private at the same time (or the same option multiple times). This is not well supported and may lead to unexpected results
+2026-07-22 17:06:50 Options error: Unrecognized option or missing or extra parameter(s) in [PUSH-OPTIONS]:4: block-outside-dns (2.5.11)
+2026-07-22 17:06:50 OPTIONS IMPORT: timers and/or timeouts modified
+2026-07-22 17:06:50 OPTIONS IMPORT: --ifconfig/up options modified
+2026-07-22 17:06:50 OPTIONS IMPORT: route options modified
+2026-07-22 17:06:50 OPTIONS IMPORT: --ip-win32 and/or --dhcp-option options modified
+2026-07-22 17:06:50 OPTIONS IMPORT: peer-id set
+2026-07-22 17:06:50 OPTIONS IMPORT: adjusting link_mtu to 1624
+2026-07-22 17:06:50 OPTIONS IMPORT: data channel crypto options modified
+2026-07-22 17:06:50 Outgoing Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 17:06:50 Incoming Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+2026-07-22 17:06:50 net_route_v4_best_gw query: dst 0.0.0.0
+2026-07-22 17:06:50 net_route_v4_best_gw result: via 192.168.53.1 dev enp2s0
+2026-07-22 17:06:50 ROUTE_GATEWAY 192.168.53.1/255.255.255.0 IFACE=enp2s0 HWADDR=fc:aa:14:7f:fc:78
+2026-07-22 17:06:50 TUN/TAP device tun2 opened
+2026-07-22 17:06:50 net_iface_mtu_set: mtu 1500 for tun2
+2026-07-22 17:06:50 net_iface_up: set tun2 up
+2026-07-22 17:06:50 net_addr_ptp_v4_add: 10.102.192.158 peer 10.102.192.157 dev tun2
+2026-07-22 17:06:52 net_route_v4_add: 145.239.255.68/32 via 192.168.53.1 dev [NULL] table 0 metric -1
+2026-07-22 17:06:52 net_route_v4_add: 0.0.0.0/1 via 10.102.192.157 dev [NULL] table 0 metric -1
+2026-07-22 17:06:52 net_route_v4_add: 128.0.0.0/1 via 10.102.192.157 dev [NULL] table 0 metric -1
+2026-07-22 17:06:52 net_route_v4_add: 10.102.192.1/32 via 10.102.192.157 dev [NULL] table 0 metric -1
+[96m2026-07-22 17:06:52 Initialization Sequence Completed
+[0m[94m[*][0m [94mAdding route: sudo ip route add 192.168.55.0/24 via 192.168.53.1[0m
+[92m[+][0m [92mRoute added: 192.168.55.0/24 via 192.168.53.1[0m
+[94m[*][0m [94mAdding route: sudo ip route add 192.168.54.0/24 via 192.168.53.1[0m
+[92m[+][0m [92mRoute added: 192.168.54.0/24 via 192.168.53.1[0m
+
+[96m============================================================[0m
+[96m[1m  Connection Info[0m[0m
+[96m============================================================[0m
+
+  [93mTunnel Interface[0m ([96mtun2[0m):
+    [94mLocal IP[0m : [96m10.102.192.158[0m
+    [94mPeer IP [0m : [96m10.102.192.157[0m
+
+  [93mPublic IP (via VPN)[0m: [96m145.239.255.68[0m
+
+============================================================
+

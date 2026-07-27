@@ -1,6 +1,6 @@
 # AutoOVPN — VPNBook OpenVPN Config Downloader & Runner
 
-**Version:** 0.0.4  
+**Version:** 0.0.5  
 **Author:** Igor Brzezek  
 **GitHub:** [https://github.com/IgorBrzezek](https://github.com/IgorBrzezek)  
 
@@ -26,6 +26,7 @@ A Python 3 utility that dynamically scans the [VPNBook](https://www.vpnbook.com/
    - [--user / --pwd](#--user---pwd)
    - [--datafile](#--datafile)
    - [--addroute](#--addroute)
+   - [--routes](#--routes)
 5. [Examples](#examples)
    - [Scanning Only](#scanning-only)
    - [Downloading Configs](#downloading-configs)
@@ -135,6 +136,9 @@ python autoovpn.py --run file.ovpn --datafile myauth.txt
 
 # Run and add routes after the VPN connects
 python autoovpn.py --run us16,tcp443 --addroute 192.168.53.0/24,10.10.10.1 --addroute 10.0.0.0/8,10.8.0.1
+
+# Run and load routes from a file (NETWORK/MASK,GATEWAY per line)
+python autoovpn.py --run us16,tcp443 --routes /path/to/routes.txt
 
 # Run with a 1-hour timeout
 python autoovpn.py --run us16,tcp443 --timeout 01:00:00
@@ -368,15 +372,36 @@ python autoovpn.py --run us16,tcp443 \
   --addroute 10.0.0.0/8,10.8.0.1
 ```
 
-The program waits up to 15 seconds for the "Initialization Sequence Completed" message from OpenVPN, then adds each route:
-```
-sudo ip route add 192.168.53.0/24 via 10.10.10.1
-sudo ip route add 10.0.0.0/8 via 10.8.0.1
-```
+The program waits up to 15 seconds for the "Initialization Sequence Completed" message from OpenVPN, then checks each route:
 
-On disconnect (timeout, user interrupt, or OpenVPN exit), routes are cleaned up in reverse order.
+- **If the route already exists** in the system routing table, it is skipped with a warning and will **not** be removed on exit. This prevents autoovpn from interfering with routes managed by other tools or manual configuration.
+- **If the route does not exist**, it is added:
+  ```
+  sudo ip route add 192.168.53.0/24 via 10.10.10.1
+  sudo ip route add 10.0.0.0/8 via 10.8.0.1
+  ```
+
+On disconnect (timeout, user interrupt, or OpenVPN exit), only routes that were actually added by autoovpn are cleaned up in reverse order. Pre-existing routes are left untouched.
 
 When `--addroute` is used, the routes are displayed in the summary before OpenVPN starts:
+
+### `--routes`
+
+Load routes from a file instead of specifying them on the command line. Routes are treated identically to `--addroute` and can be combined with it.
+
+File format: one route per line, `NETWORK/MASK,GATEWAY`. Lines starting with `#` and empty lines are ignored.
+
+```
+# Example routes.txt
+192.168.53.0/24,10.10.10.1
+10.0.0.0/8,10.8.0.1
+```
+
+```
+python autoovpn.py --run us16,tcp443 --routes myroutes.txt
+```
+
+Routes from `--routes` and `--addroute` are merged into a single list and applied after the VPN connects. Pre-existing routes are detected and skipped; they will **not** be removed when the VPN disconnects.
 
 ### `-d`, `--daemonize`
 
@@ -553,7 +578,12 @@ python autoovpn.py --run us16,tcp443 --addroute 192.168.53.0/24,10.10.10.1
 python autoovpn.py --run us16,tcp443 \
   --addroute 192.168.53.0/24,10.10.10.1 \
   --addroute 10.0.0.0/8,10.8.0.1
+
+# Load routes from a file (one NETWORK/MASK,GATEWAY per line)
+python autoovpn.py --run us16,tcp443 --routes routes.txt
 ```
+
+If a route already exists in the system routing table, it is skipped with a warning and will **not** be removed when the VPN disconnects. This ensures autoovpn never alters routes that were configured manually or by other tools.
 
 ### Custom TUN Device Number
 
@@ -891,11 +921,11 @@ All files are saved to the same directory as the `autoovpn.py` script.
 │  └─────────────────────┘         └───────────────────────┘       │
 │                                                                   │
 │  ┌─────────────────────────────────────────────────────────────┐  │
-│  │  CLI (argparse) — 19 options                               │  │
+│  │  CLI (argparse) — 22 options                               │  │
 │  │  --scan | --get | --proto | --port | --getlogin | --inject │  │
 │  │  --shortdir | --datadir | --run | --dev | --timeout        │  │
-│  │  --user | --pwd | --datafile | --addroute | --daemonize    │  │
-│  │  --log | --kill                                             │  │
+│  │  --user | --pwd | --datafile | --addroute | --routes       │  │
+│  │  --showip | --daemonize | --log | --kill | --check          │  │
 │  └─────────────────────────────────────────────────────────────┘  │
 └────────────────────────────────────────────────────────────────────┘
 ```
@@ -908,7 +938,7 @@ The program flow:
 4. **Filtering** — Country, protocol, and port filters are applied.
 5. **Authentication Setup** — Credentials are resolved, auth files are created (temp or persistent), and `auth-user-pass` references are computed.
 6. **Download Loop** — For each server/protocol combination, the config is fetched from the VPNBook API, transformed (inject auth, replace hostname, replace TUN), and saved.
-7. **Run** (if `--run`) — OpenVPN is launched with `sudo`, a background thread reads output, a timer tracks the timeout, and routes are added/removed on connect/disconnect.
+7. **Run** (if `--run`) — OpenVPN is launched with `sudo`, a background thread reads output, a timer tracks the timeout, and routes from `--addroute`/`--routes` are added on connect (skipping any that already exist) and removed on disconnect (only those actually added by autoovpn).
 8. **Cleanup** — Temporary auth files and config copies are deleted.
 
 ---
@@ -938,6 +968,7 @@ The program flow:
 - The program waits up to 15 seconds for OpenVPN to connect. If your connection takes longer, the route may not be added.
 - Verify the gateway IP is correct for your VPN tunnel (often the first IP in the VPN subnet, e.g., `10.8.0.1`).
 - Run `ip route` after the VPN connects to find the correct gateway.
+- If a route already exists in the system routing table, it is intentionally skipped to avoid duplication or interference. Check with `ip route show <prefix>`.
 
 ### Permission denied on temporary auth file
 - The program sets permissions to `0o644` (world-readable) so `sudo openvpn` can read it. If this fails, check your `umask` and file system permissions.

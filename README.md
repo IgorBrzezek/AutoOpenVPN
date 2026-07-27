@@ -66,13 +66,14 @@ python autoovpn.py --run us16,tcp443 --datafile /tmp/vpn.auth
 ### autoovpn.py
 
 **File:** `autoovpn.py`  
-**Version:** 0.0.4  
+**Version:** 0.0.5  
 **Role:** The main workhorse — scans VPNBook, downloads configs, runs OpenVPN.
 
 - Dynamically scrapes the VPNBook website by parsing React Server Component (RSC) payloads embedded in the page HTML.
 - Extracts the server list (10+ servers in US, CA, UK, DE, FR), supported protocols (TCP 443/80, UDP 53/25000), and current credentials.
 - Downloads `.ovpn` config files via the VPNBook API, with optional `auth-user-pass` injection, hostname-to-IP replacement, and TUN device override.
 - Can directly launch OpenVPN with `--run`, supporting custom credentials, auth files, timeout-based auto-disconnect, and post-connect route injection.
+- Pre-existing routes are detected and skipped; only routes actually added by autoovpn are cleaned up on exit.
 - Falls back to a built-in static server list if the website is unreachable.
 
 **Key commands:**
@@ -83,6 +84,7 @@ python autoovpn.py --get ca --proto tcp            # Canadian TCP only
 python autoovpn.py --run us16,tcp443               # Download & connect
 python autoovpn.py --run us16.ovpn --timeout 02:00:00  # Run with timeout
 python autoovpn.py --run us16,tcp443 --addroute 192.168.53.0/24,10.10.10.1 --addroute 10.0.0.0/8,10.8.0.1
+python autoovpn.py --run us16,tcp443 --routes /path/to/routes.txt   # Load routes from file
 python autoovpn.py -d --run us16,tcp443               # Daemonize (background)
 python autoovpn.py --kill                              # Kill OpenVPN + cleanup
 ```

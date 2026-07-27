@@ -16,9 +16,12 @@ Examples:
    autoovpn --run us16_tcp443_443.ovpn # run a local .ovpn config file
    autoovpn --run file.ovpn --user vpnbook --pwd secret # with custom credentials
    autoovpn --run file.ovpn --datafile myauth.txt   # with existing auth file
-   autoovpn --run us16,tcp443 --addroute 192.168.53.0/24,10.10.10.1 --addroute 10.0.0.0/8,10.8.0.1  # add routes after connect
-   autoovpn -d --run us16,tcp443 --log myvpn  # daemonize + log to myvpn.log
-   autoovpn --kill                              # kill OpenVPN + cleanup routes
+     autoovpn --run us16,tcp443 --addroute 192.168.53.0/24,10.10.10.1 --addroute 10.0.0.0/8,10.8.0.1  # add routes after connect
+     autoovpn --run us16,tcp443 --routes /path/to/routes.txt   # load routes from file
+     autoovpn -d --run us16,tcp443 --log myvpn  # daemonize + log to myvpn.log
+     autoovpn --kill                              # kill OpenVPN + cleanup routes
+     # Pre-existing routes (from --addroute/--routes) are detected and skipped;
+     # they will NOT be removed on exit to avoid altering system configuration.
 """
 
 import argparse
@@ -79,7 +82,7 @@ def color_header(text):
 
 
 AUTHOR = "Igor Brzezek"
-VERSION = "0.0.4"
+VERSION = "0.0.5"
 GITHUB = "https://github.com/IgorBrzezek"
 
 # ---------------------------------------------------------------------------
@@ -460,6 +463,38 @@ def parse_addroute(value):
     return (network_cidr, gateway)
 
 
+def parse_routes_file(filename):
+    if not os.path.isfile(filename):
+        raise argparse.ArgumentTypeError(f"File '{filename}' not found")
+    routes = []
+    with open(filename) as f:
+        for lineno, line in enumerate(f, 1):
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            parts = line.split(',')
+            if len(parts) != 2:
+                raise argparse.ArgumentTypeError(
+                    f"{filename}:{lineno}: expected NETWORK/MASK,GATEWAY, got '{line}'")
+            network_cidr, gateway = parts[0].strip(), parts[1].strip()
+            cidr_parts = network_cidr.split('/')
+            if len(cidr_parts) != 2:
+                raise argparse.ArgumentTypeError(
+                    f"{filename}:{lineno}: invalid CIDR '{network_cidr}'")
+            try:
+                socket.inet_aton(cidr_parts[0])
+                mask = int(cidr_parts[1])
+                if mask < 0 or mask > 32:
+                    raise argparse.ArgumentTypeError(
+                        f"{filename}:{lineno}: invalid mask {mask}")
+                socket.inet_aton(gateway)
+            except (OSError, ValueError) as e:
+                raise argparse.ArgumentTypeError(
+                    f"{filename}:{lineno}: invalid route '{line}': {e}")
+            routes.append((network_cidr, gateway))
+    return routes
+
+
 def _add_route(network_cidr, gateway):
     cmd = ["sudo", "ip", "route", "add", network_cidr, "via", gateway]
     print(color_status(f"Adding route: {' '.join(cmd)}", '*'))
@@ -480,6 +515,14 @@ def _del_route(network_cidr, gateway):
         return False
     print(color_status(f"Route removed: {network_cidr} via {gateway}", '-'))
     return True
+
+
+def _route_exists(network_cidr, gateway):
+    result = subprocess.run(
+        ["ip", "route", "show", network_cidr],
+        capture_output=True, text=True, timeout=5
+    )
+    return network_cidr in result.stdout
 
 
 def _save_pid_routes(addroute=None):
@@ -827,7 +870,7 @@ def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None,
               file=sys.stderr)
         return
 
-    _save_pid_routes(addroute)
+    _save_pid_routes(None)
 
     added_routes = []
     connected_event = threading.Event()
@@ -856,10 +899,15 @@ def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None,
         connected = connected_event.wait(timeout=15)
         if connected:
             for route in addroute:
-                if _add_route(*route):
+                if _route_exists(*route):
+                    print(color_status(f"Route {route[0]} via {route[1]} already exists, skipping.", '*'))
+                elif _add_route(*route):
                     added_routes.append(route)
         else:
             print(color_status("OpenVPN not connected after 15s, routes not added.", '!'), file=sys.stderr)
+
+    if addroute:
+        _save_pid_routes(added_routes)
 
     # Show connection info as soon as VPN is connected (tunnel is active)
     if showip:
@@ -982,7 +1030,13 @@ def main():
                         help="Add route NET/MASK via GATEWAY after VPN connects; "
                              "route is removed when VPN disconnects "
                              "(e.g. 192.168.53.0/24,10.10.10.1); "
-                             "can be specified multiple times")
+                             "can be specified multiple times; "
+                             "pre-existing routes are skipped and never removed")
+    parser.add_argument("--routes", metavar="FILENAME", type=parse_routes_file,
+                        default=None,
+                        help="Load routes from file (NETWORK/MASK,GATEWAY per line); "
+                             "lines starting with # are skipped; "
+                             "pre-existing routes are skipped and never removed")
     parser.add_argument("--showip", action="store_true",
                         help="After connection, show public IP and tunnel addresses")
     parser.add_argument("--color", action="store_true",
@@ -993,7 +1047,8 @@ def main():
     parser.add_argument("--log", metavar="FILENAME",
                         help="Log file path (default extension .log); output is appended")
     parser.add_argument("--kill", action="store_true",
-                        help="Kill running OpenVPN, remove routes, and cleanup")
+                        help="Kill running OpenVPN, remove auto-added routes only, "
+                             "and cleanup")
     parser.add_argument("--check", action="store_true",
                         help="Check if OpenVPN is running and show parameters")
     args = parser.parse_args()
@@ -1054,9 +1109,14 @@ def main():
     if args.addroute and not args.run:
         print(color_status("--addroute can only be used with --run", '!'), file=sys.stderr)
         return
+    if args.routes and not args.run:
+        print(color_status("--routes can only be used with --run", '!'), file=sys.stderr)
+        return
     if args.daemonize and not args.run:
         print(color_status("--daemonize can only be used with --run", '!'), file=sys.stderr)
         return
+
+    all_routes = (args.addroute or []) + (args.routes or [])
 
     # --daemonize: spawn background process and exit
     if args.daemonize:
@@ -1231,7 +1291,7 @@ def main():
         else:
             config_path = run_ovpn_file
 
-        _run_openvpn(config_path, timeout_seconds, args.timeout, run_temp_auth, args.addroute, args.showip)
+        _run_openvpn(config_path, timeout_seconds, args.timeout, run_temp_auth, all_routes, args.showip)
 
         # Clean up the temporary config copy if one was created
         if temp_config_path and os.path.exists(temp_config_path):
@@ -1382,7 +1442,7 @@ def main():
 
     # -- --- --run: execute openvpn (with sudo) and clean up temp auth file -----
     if args.run and saved_paths:
-        _run_openvpn(saved_paths[0], timeout_seconds, args.timeout, run_temp_auth, args.addroute, args.showip)
+        _run_openvpn(saved_paths[0], timeout_seconds, args.timeout, run_temp_auth, all_routes, args.showip)
 
 
 if __name__ == "__main__":

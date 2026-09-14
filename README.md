@@ -10,6 +10,10 @@ A set of three Python tools for working with free [VPNBook](https://www.vpnbook.
 
 All three are designed to work independently or together, forming a complete VPN workflow: **get credentials → download config → connect → monitor**.
 
+Example image of OpenVPN Monitor
+
+![Example image](images/openvpnmonitor.png)
+
 ---
 
 ## Quick Overview

@@ -873,7 +873,12 @@ def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None,
     _save_pid_routes(None)
 
     added_routes = []
+    preexisting_routes = set()
     connected_event = threading.Event()
+    reconnect_event = threading.Event()
+    routes_lock = threading.Lock()
+    routes_active = threading.Event()
+    connect_count = [0]
     tun_dev_info = [None]
     ip_shown = [False]
 
@@ -885,6 +890,9 @@ def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None,
                 print(line, end='', flush=True)
             if 'Initialization Sequence Completed' in line:
                 connected_event.set()
+                connect_count[0] += 1
+                if connect_count[0] > 1:
+                    reconnect_event.set()
             m = re.search(r'TUN/TAP device (tun\d+) opened', line)
             if m:
                 tun_dev_info[0] = m.group(1)
@@ -892,22 +900,47 @@ def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None,
             if m2:
                 tun_dev_info[0] = m2.group(1)
 
+    def _add_routes_pass(initial=False):
+        """Add every missing --addroute/--routes entry (single-threaded)."""
+        with routes_lock:
+            for route in addroute:
+                if route in preexisting_routes:
+                    continue
+                if _route_exists(*route):
+                    if initial:
+                        preexisting_routes.add(route)
+                    print(color_status(f"Route {route[0]} via {route[1]} already exists, skipping.", '*'))
+                elif _add_route(*route):
+                    if route not in added_routes:
+                        added_routes.append(route)
+
+    def _route_manager():
+        """Re-add routes whenever OpenVPN completes a reconnection.  Every
+        successful tunnel setup emits 'Initialization Sequence Completed'
+        again; routes added via --addroute/--routes are flushed from the
+        routing table when the tunnel goes down, so they must be restored."""
+        while True:
+            reconnect_event.wait()
+            reconnect_event.clear()
+            routes_active.wait()  # only after the initial pass has run
+            print(color_status("VPN reconnected - restoring --addroute routes...", '*'))
+            _add_routes_pass(initial=False)
+            _save_pid_routes(added_routes)
+
     reader = threading.Thread(target=_output_reader, daemon=True)
     reader.start()
 
     if addroute:
         connected = connected_event.wait(timeout=15)
         if connected:
-            for route in addroute:
-                if _route_exists(*route):
-                    print(color_status(f"Route {route[0]} via {route[1]} already exists, skipping.", '*'))
-                elif _add_route(*route):
-                    added_routes.append(route)
+            _add_routes_pass(initial=True)
+            routes_active.set()
         else:
             print(color_status("OpenVPN not connected after 15s, routes not added.", '!'), file=sys.stderr)
 
     if addroute:
         _save_pid_routes(added_routes)
+        threading.Thread(target=_route_manager, daemon=True).start()
 
     # Show connection info as soon as VPN is connected (tunnel is active)
     if showip:
@@ -972,8 +1005,9 @@ def _run_openvpn(config_path, timeout_seconds, timeout_str, temp_auth_file=None,
             process.wait()
     finally:
         _cleanup_pid_routes()
-        for route in reversed(added_routes):
-            _del_route(*route)
+        with routes_lock:
+            for route in reversed(added_routes):
+                _del_route(*route)
         if temp_auth_file and os.path.exists(temp_auth_file.name):
             os.unlink(temp_auth_file.name)
             print(color_status(f"Temp auth file {temp_auth_file.name} removed.", '*'))
